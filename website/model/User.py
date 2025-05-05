@@ -4,7 +4,7 @@ from sqlalchemy.sql import func
 
 class User(db.Model, UserMixin):
     __tableneme__ = 'usuario'
-
+    
     id = db.Column(db.Integer, primary_key = True)
     nome = db.Column(db.String(100))
     cpf = db.Column(db.String(11))
