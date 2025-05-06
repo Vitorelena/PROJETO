@@ -12,10 +12,16 @@ def create_app():
     db.init_app(app)
 
     
-    from .controller.view import views
+    from .controller.viewHome import views
+    from .controller.viewLogin import viewLogin
+    from .controller.viewSignup import viewSign
 
     app.register_blueprint(views, url_prefix='/')
+    app.register_blueprint(viewLogin, url_prefix='/')
+    app.register_blueprint(viewSign, url_prefix='/')
 
+    from .model.Loja import Loja
+    print(Loja)
     from .model.User import User
     from .model.Cliente import Cliente
     from .model.Funcionario import Funcionario
@@ -23,7 +29,7 @@ def create_app():
     from .model.SubGerente import SubGerente
     from .model.Gerente import Gerente
     from .model.Ceo import Ceo
-    from .model.Loja import Loja
+    
     create_database(app)
 
     return app
@@ -31,5 +37,6 @@ def create_app():
 def create_database(app):  
      if not path.exists('website/' + DB_NAME):
         with app.app_context():
+            print("Tentando criar o banco de dados e as tabelas...")
             db.create_all()
         print('Created Database!')
