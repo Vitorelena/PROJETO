@@ -3,7 +3,7 @@ from flask_login import UserMixin
 from sqlalchemy.sql import func
 
 class Loja:
-    __tableneme__ = 'loja'
+    __tablename__ = 'loja'
     id = db.Column(db.Integer, primary_key = True)
     endereco = db.Column(db.String(100))
     cnpj = db.Column(db.String(20))
