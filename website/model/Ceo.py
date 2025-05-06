@@ -1,4 +1,4 @@
-from . import db
+from .. import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 from .Funcionario import Funcionario
@@ -7,8 +7,6 @@ class Ceo(Funcionario):
     __maper_args__={
         'polymorfic_identity':7
     }
-    matricula = db.Column(db.String(20))
-    numero_vendas = db.Column(db.Integer)
     def __repr__(self):
         return f"<Funcionario id={self.id}, nome='{self.nome}', cpf='{self.cpf}', matricula='{self.matricula}', numero de vendas = {self.numero_vendas}>" #testar
     def gerar_relatorio(self):

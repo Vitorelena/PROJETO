@@ -1,11 +1,11 @@
-from . import db
+from .. import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 from .User import User
 
 class Cliente(User):
     __maper_args__={
-        'polymorfic_identity':3
+        'polymorfic_identity':2
     }
     numero_compras = db.Column(db.Integer)
     def __repr__(self):

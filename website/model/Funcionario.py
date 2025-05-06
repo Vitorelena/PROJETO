@@ -1,11 +1,11 @@
-from . import db
+from .. import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 from .User import User
 
 class Funcionario(User):
     __maper_args__={
-        'polymorfic_identity':2
+        'polymorfic_identity':3
     }
     matricula = db.Column(db.String(20))
     numero_vendas = db.Column(db.Integer)
@@ -23,4 +23,4 @@ class Funcionario(User):
         return
     def editar_estoque(self):
         return
-    
+     

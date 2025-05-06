@@ -1,4 +1,4 @@
-from . import db
+from .. import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 
@@ -9,6 +9,8 @@ class User(db.Model, UserMixin):
     nome = db.Column(db.String(100))
     cpf = db.Column(db.String(11))
     tipo_usuario = db.Column(db.Integer)
+    login = db.Column(db.String(20))
+    senha = db.Column(db.String(20))
 
     __maper_args__={
         'polymorphic_identity': 'usuario',
