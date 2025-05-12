@@ -2,18 +2,83 @@
 
 {% block title %}Página Inicial do Meu Site{% endblock %}
 {%block alert%}{%endblock%}
-{% block content %}
-    <section class="hero">
-        <h2>Conheça nossos produtos!</h2>
-        <p>Uma breve descrição dos nossos produtos e serviços.</p>
-        <button>Saiba Mais</button>
-    </section>
-    <section class="news">
-        <h3>Últimas Novidades</h3>
-        <ul>
-            <li>Nova funcionalidade adicionada!</li>
-            <li>Evento especial na próxima semana.</li>
-        </ul>
-    </section>
-{% endblock %}
-
+{%block content%}
+<div class="container mt-5" >
+    <h3>Produtos em destaque</h3>
+    <div id="carouselExampleIndicators" class="carousel slide w-100" data-ride="carousel" style="max-height: 400px; overflow: hidden; border: 1px solid #3b3636;">
+        <ol class="carousel-indicators">
+            <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+            <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+        </ol>
+        <div class="carousel-inner" style="max-height: 400px;">
+            <div class="carousel-item active" style="max-height: 400px">
+                <img class="d-block w-100" src="{{ url_for('static', filename='images/imagem1.png') }}" alt="Primeiro Slide" style="object-fit: contain; max-height: 400px;">
+            </div>
+            <div class="carousel-item" style="max-height: 400px;">
+                <img class="d-block w-100" src="{{ url_for('static', filename='images/imagem2.png') }}" alt="Segundo Slide" style="object-fit: contain; max-height: 400px;">
+            </div>
+            <div class="carousel-item" style="max-height: 400px;">
+                <img class="d-block w-100" src="{{ url_for('static', filename='images/imagem3.png') }}" alt="Terceiro Slide" style="object-fit: contain; max-height: 400px;">
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Anterior</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Próximo</span>
+        </a>
+    </div>
+    <div class="row mt-4 justify-content-around align-items-start">
+        <div class="col-md-6 text-center">
+            <h3>Nossas unidades</h3>
+            <div id="map-container" style="height: 400px; width: 100%;">
+                {{ map_html | safe }}
+            </div>
+        </div>
+        <div class="col-md-6" style="padding-left: 130px;">
+            <h3 class="text-center" style="margin-bottom: 15px;">Categorias</h3>
+            <ul class="list-unstyled">
+                <li style="margin-bottom: 5px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{{ url_for('static', filename='images/icon1.png') }}" alt="Vestuário feminino" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
+                        <a href="{{ url_for('view.home', categoria_id=1) }}">Vestuário feminino</a>
+                    </div>
+                </li>
+                <li style="margin-bottom: 5px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{{ url_for('static', filename='images/icon2.png') }}" alt="Vestuário masculino" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
+                        <a href="{{ url_for('view.home', categoria_id=2) }}">Vestuário masculino</a>
+                    </div>
+                </li>
+                <li style="margin-bottom: 5px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{{ url_for('static', filename='images/icon3.png') }}" alt="Calçados" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
+                        <a href="{{ url_for('view.home', categoria_id=3) }}">Calçados</a>
+                    </div>
+                </li>
+                <li style="margin-bottom: 5px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{{ url_for('static', filename='images/icon4.png') }}" alt="Equipamentos esportivos" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
+                        <a href="{{ url_for('view.home', categoria_id=4) }}">Equipamentos esportivos</a>
+                    </div>
+                </li>
+                <li style="margin-bottom: 5px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{{ url_for('static', filename='images/icon5.png') }}" alt="Suplementos" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
+                        <a href="{{ url_for('view.home', categoria_id=5) }}">Suplementos</a>
+                    </div>
+                </li>
+                <li style="margin-bottom: 5px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{{ url_for('static', filename='images/icon6.png') }}" alt="Outros" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
+                        <a href="{{ url_for('view.home', categoria_id=6) }}">Outros</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+        
+{%endblock%}

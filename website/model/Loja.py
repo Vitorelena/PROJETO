@@ -9,4 +9,4 @@ class Loja(db.Model):
     cnpj = db.Column(db.String(20))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-   
+    nome = db.Column(db.String) 

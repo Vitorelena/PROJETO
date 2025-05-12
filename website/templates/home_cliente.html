@@ -1,0 +1,10 @@
+{% extends 'layout.html' %}
+
+{% block title %}Minha Conta {% endblock %}
+
+{% block content %}
+<h3>
+    CLIENTE - Bem-vindo(a), {{ current_user.login }}!
+</h3>
+<pre>{{ relatorio }}</pre>
+{% endblock %}

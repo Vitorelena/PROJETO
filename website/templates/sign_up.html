@@ -60,6 +60,14 @@
                                     <label for="matricula">Matrícula:</label>
                                     <input type="text" class="form-control" name="matricula">
                                 </div>
+                                <div class="form-group">
+                                    <label for="nivel_funcionario">Nível do Funcionário:</label>
+                                    <select id="nivel_funcionario" class="form-control" name="nivel_funcionario">
+                                        <option value="1">Staff</option>
+                                        <option value="2">Sub-Gerente</option>
+                                        <option value="3">Gerente</option>
+                                    </select>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-primary btn-block">Enviar</button>
                         </div>
@@ -74,8 +82,14 @@
             var camposFuncionario = document.getElementById("campos_funcionario");
             if (tipoUsuario == 3) {
                 camposFuncionario.style.display = "block";
+                // Tornar os campos de funcionário obrigatórios quando visíveis
+                document.getElementById("matricula").required = true;
+                document.getElementById("nivel_funcionario").required = true;
             } else {
                 camposFuncionario.style.display = "none";
+                // Tornar os campos de funcionário não obrigatórios quando ocultos
+                document.getElementById("matricula").required = false;
+                document.getElementById("nivel_funcionario").required = false;
             }
         }
     </script>

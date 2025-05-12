@@ -1,15 +1,31 @@
 from .. import db
-from ..model.User import User
-from ..model.Funcionario import Funcionario
-from ..model.Cliente import Cliente
+from ..model.Users.User import User
+from ..model.Users.Staff import Staff
+from ..model.Users.SubGerente import SubGerente
+from ..model.Users.Gerente import Gerente
+from ..model.Users.Cliente import Cliente
+from ..model.Users.Funcionario import Funcionario
 
 class UserDatabaseService:
     @staticmethod
-    def adicionar_funcionario(nome, cpf, login, senha, matricula):
-        novo_funcionario = Funcionario(nome = nome, cpf = cpf, tipo_usuario = 3, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+    def adicionar_staff(nome, cpf, login, senha, matricula):
+        novo_funcionario = Staff(nome = nome, cpf = cpf, tipo_usuario = 3, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
         db.session.add(novo_funcionario)
         db.session.commit()
         return novo_funcionario
+    @staticmethod
+    def adicionar_subgerente(nome, cpf, login, senha, matricula):
+        novo_funcionario = SubGerente(nome = nome, cpf = cpf, tipo_usuario = 3, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        db.session.add(novo_funcionario)
+        db.session.commit()
+        return novo_funcionario
+    @staticmethod
+    def adicionar_gerente(nome, cpf, login, senha, matricula):
+        novo_funcionario = Gerente(nome = nome, cpf = cpf, tipo_usuario = 3, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        db.session.add(novo_funcionario)
+        db.session.commit()
+        return novo_funcionario
+        
     
     @staticmethod
     def adicionar_cliente(nome, cpf, login, senha):
@@ -37,7 +53,7 @@ class UserDatabaseService:
     @staticmethod
     def editar_funcionario(usuario_id , nome=None, cpf=None, login=None, senha=None, matricula=None, numero_vendas=None):
         funcionario = Funcionario.query.get(usuario_id)
-        if funcionario and funcionario.tipo_usuario == 3:
+        if funcionario and funcionario.tipo_usuario >= 3:
             if nome:
                 funcionario.nome = nome
             if cpf:
@@ -53,6 +69,15 @@ class UserDatabaseService:
             db.session.commit()
             return(True)
         return(False)
+    
+    @staticmethod
+    def promover_funcionario(usuario_id, novo_nivel):
+        funcionario = Funcionario.query.get(usuario_id)
+        if funcionario:
+            funcionario.nivel = novo_nivel
+            db.session.commit()
+            return (True)
+        return (False)
     
     @staticmethod 
     def funcionario_fez_venda(usuario_id):
