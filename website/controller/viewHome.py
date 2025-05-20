@@ -1,8 +1,10 @@
 from flask import Blueprint,render_template, request, redirect, url_for
 import folium
+from .. import db
 from ..model.Loja import Loja
 from ..model.Users.Cliente import Cliente
-
+from ..model.Produtos.Produto import Produto
+from sqlalchemy.orm import joinedload
 from ..service.ProdutoDatabaseService import ProdutoDatabaseService
 from flask_login import current_user
 
@@ -26,11 +28,32 @@ def home(categoria_id):
     
     map_html = m._repr_html_()
 
-    if categoria_id:
-        produtos = ProdutoDatabaseService.get_produtos_por_categoria(categoria_id)
+    categoria_templates = {
+        1: 'feminino',  # Assumindo que 1 é 'VestuarioFeminino'
+        2: 'masculino', # Assumindo que 2 é 'VestuarioMasculino'
+        3: 'calcados',   # Assumindo que 3 é 'Calcados'
+        4: 'esportivos', # Assumindo que 4 é 'EquipamentosEsportivos'
+        5: 'suplementos', # Corresponde ao seu 'Suplementos' com identity 5
+        6: 'outros'      # Assumindo que 6 é 'Outros'
+    }
+    produtos_em_estoque = []
+    todos_produtos = ProdutoDatabaseService.get_todos_produtos()
+    for produto in todos_produtos:
+        produto_com_estoque = db.session.query(Produto).options(joinedload(Produto.estoque)).filter_by(id=produto.id).first()
+        if produto_com_estoque and produto_com_estoque.estoque and produto_com_estoque.estoque.quantidade > 0:
+            produtos_em_estoque.append(produto_com_estoque)
+
+    if categoria_id and categoria_id in categoria_templates:
+        nome_template = categoria_templates[categoria_id] + '.html'
+        produtos_categoria = ProdutoDatabaseService.get_produtos_por_categoria(categoria_id)
+        produtos_com_estoque_categoria = []
+        for produto in produtos_categoria:
+            produto_estoque = db.session.query(Produto).options(joinedload(Produto.estoque)).filter_by(id=produto.id).first()
+            if produto_estoque:
+                produtos_com_estoque_categoria.append(produto_estoque)
+        return render_template(nome_template, produtos=produtos_com_estoque_categoria, produtos_estoque_home=produtos_em_estoque)
     else:
-        produtos = ProdutoDatabaseService.get_todos_produtos()
-    return render_template("home.html", map_html = map_html)
+        return render_template("home.html", map_html = map_html, produtos_estoque_home=produtos_em_estoque)
 
 @views.route('/home_cliente')
 def home_cliente():

@@ -20,20 +20,32 @@ def create_app():
     from .controller.viewHome import views
     from .controller.viewLogin import viewLogin
     from .controller.viewSignup import viewSign
+    from .controller.viewProduct import view_product
+    from .controller.viewVenda import view_venda
+
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(viewLogin, url_prefix='/')
     app.register_blueprint(viewSign, url_prefix='/')
+    app.register_blueprint(view_product, url_prefix='/')
+    app.register_blueprint(view_venda,url_prefix='/')
+
+
+    from .model.Produtos.VestuarioFeminino import VestuarioFeminino
+    from .model.Produtos.VestuarioMasculino import VestuarioMasculino
+    from .model.Produtos.Calcados import Calcados
+    from .model.Produtos.Suplementos import Suplementos
+    from .model.Produtos.Equipamentos import Equipamentos
+    from .model.Produtos.Outros import Outros
+    from .model.Produtos.Produto import Produto  # Importe Produto AQUI
 
     from .model.Loja import Loja
-    print(Loja)
     from .model.Users.User import User
-    from .model.Users.Cliente import Cliente
-    from .model.Users.Funcionario import Funcionario
-    from .model.Users.Staff import Staff
-    from .model.Users.SubGerente import SubGerente
-    from .model.Users.Gerente import Gerente
-    from .model.Users.Ceo import Ceo
+    # ... outros modelos de usuário ...
+
+    from .model.Vendas.Venda import Venda
+    from .model.Vendas.ItemVendido import ItemVendido
+
 
     from .model.Users.User import User
     from . import login_manager # Isso aqui não é necessário, já temos a global

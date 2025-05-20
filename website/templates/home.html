@@ -1,6 +1,28 @@
+<!DOCTYPE html>
+<style>
+    .image-cell {
+        width: 80px; /* Largura desejada para a célula da imagem */
+        height: 80px; /* Altura desejada para a célula da imagem */
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #ddd; /* Opcional: para visualizar a célula */
+        padding: 5px; /* Opcional: espaçamento interno */
+    }
+
+    .product-image {
+        max-width: 100%; /* Garante que a imagem não seja maior que a largura da célula */
+        max-height: 100%; /* Garante que a imagem não seja maior que a altura da célula */
+        width: auto; /* Mantém a proporção original da imagem */
+        height: auto; /* Mantém a proporção original da imagem */
+        display: block; /* Remove espaços extras abaixo da imagem */
+        margin: auto; /* Centraliza a imagem dentro da célula */
+        object-fit: contain; /* Garante que toda a imagem caiba dentro da célula, mantendo a proporção */
+    }
+</style>
+
 {% extends "layout.html" %}
 
-{% block title %}Página Inicial do Meu Site{% endblock %}
+{% block title %}Untouched{% endblock %}
 {%block alert%}{%endblock%}
 {%block content%}
 <div class="container mt-5" >
@@ -79,6 +101,37 @@
                 </li>
             </ul>
         </div>
+        <div class="col-md-12"> <h2>Produtos em Estoque</h2>
+            <table class="table table-striped"> <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Preço</th>
+                    <th>Quantidade em Estoque</th>
+                    <th>Imagem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produto in produtos_estoque_home %}
+                <tr>
+                    <td>{{ produto.nome }}</td>
+                    <td>{{ produto.preco }}</td>
+                    <td>{{ produto.estoque.quantidade }}</td>
+                    <td class="image-cell">
+                        {% if produto.imagem_url %}
+                            <img src="{{ produto.imagem_url }}" alt="{{ produto.nome }}" class="product-image">
+                        {% else %}
+                            Sem imagem
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">Nenhum produto em estoque no momento.</td></tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+         <p><a href="{{ url_for('view_venda.carrinho') }}" class="btn btn-primary">Ver Carrinho</a></p>
     </div>
-        
+   
 {%endblock%}
+</html>

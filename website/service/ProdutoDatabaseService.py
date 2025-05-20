@@ -4,20 +4,17 @@ from ..model.Estoque import Estoque
 
 class ProdutoDatabaseService:
     @staticmethod
-    def adicionar_produto(nome, preco, codigo_de_barras=None, imagem_url=None, descricao=None):
+    def adicionar_produto(nome, preco, codigo_de_barras=None, imagem_url=None, descricao=None, cor = None):
         novo_produto = Produto(
             nome=nome,
             preco=preco,
             codigo_de_barras=codigo_de_barras,
             imagem_url=imagem_url,
-            descricao=descricao
+            descricao=descricao,
+            cor = cor
         )
         db.session.add(novo_produto)
         db.session.flush() # Garante que o ID do produto seja gerado imediatamente
-
-        # Cria automaticamente um registro de estoque associado com quantidade zero
-        novo_estoque = Estoque(produto_id=novo_produto.id, quantidade=0)
-        db.session.add(novo_estoque)
         db.session.commit()
         return novo_produto
     
