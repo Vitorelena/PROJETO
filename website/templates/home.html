@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <style>
+    /* Seus estilos existentes */
     .image-cell {
         width: 80px; /* Largura desejada para a célula da imagem */
         height: 80px; /* Altura desejada para a célula da imagem */
@@ -18,14 +19,64 @@
         margin: auto; /* Centraliza a imagem dentro da célula */
         object-fit: contain; /* Garante que toda a imagem caiba dentro da célula, mantendo a proporção */
     }
+
+    /* Estilos para o Modal (Pop-up) */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px); /* Efeito de blur no fundo */
+    }
+
+    .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .modal-content h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .modal-content button {
+        margin: 10px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .modal-content .btn-login {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .modal-content .btn-guest {
+        background-color: #6c757d;
+        color: white;
+    }
 </style>
 
 {% extends "layout.html" %}
 
 {% block title %}Untouched{% endblock %}
-{%block alert%}{%endblock%}
-{%block content%}
-<div class="container mt-5" >
+{% block alert %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
     <h3>Produtos em destaque</h3>
     <div id="carouselExampleIndicators" class="carousel slide w-100" data-ride="carousel" style="max-height: 400px; overflow: hidden; border: 1px solid #3b3636;">
         <ol class="carousel-indicators">
@@ -53,6 +104,8 @@
             <span class="sr-only">Próximo</span>
         </a>
     </div>
+
+    {% if current_user.is_authenticated %}
     <div class="row mt-4 justify-content-around align-items-start">
         <div class="col-md-6 text-center">
             <h3>Nossas unidades</h3>
@@ -101,37 +154,69 @@
                 </li>
             </ul>
         </div>
-        <div class="col-md-12"> <h2>Produtos em Estoque</h2>
-            <table class="table table-striped"> <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Preço</th>
-                    <th>Quantidade em Estoque</th>
-                    <th>Imagem</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for produto in produtos_estoque_home %}
-                <tr>
-                    <td>{{ produto.nome }}</td>
-                    <td>{{ produto.preco }}</td>
-                    <td>{{ produto.estoque.quantidade }}</td>
-                    <td class="image-cell">
-                        {% if produto.imagem_url %}
-                            <img src="{{ produto.imagem_url }}" alt="{{ produto.nome }}" class="product-image">
-                        {% else %}
-                            Sem imagem
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="4">Nenhum produto em estoque no momento.</td></tr>
-                {% endfor %}
-            </tbody>
+        <div class="col-md-12">
+            <h2>Produtos em Estoque</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Preço</th>
+                        <th>Quantidade em Estoque</th>
+                        <th>Imagem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos_estoque_home %}
+                    <tr>
+                        <td>{{ produto.nome }}</td>
+                        <td>{{ produto.preco }}</td>
+                        <td>{{ produto.estoque.quantidade }}</td>
+                        <td class="image-cell">
+                            {% if produto.imagem_url %}
+                                <img src="{{ produto.imagem_url }}" alt="{{ produto.nome }}" class="product-image">
+                            {% else %}
+                                Sem imagem
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">Nenhum produto em estoque no momento.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
-         <p><a href="{{ url_for('view_venda.carrinho') }}" class="btn btn-primary">Ver Carrinho</a></p>
+        <p><a href="{{ url_for('view_venda.carrinho') }}" class="btn btn-primary">Ver Carrinho</a></p>
     </div>
-   
-{%endblock%}
-</html>
+    {% endif %} {# Fim da condição current_user.is_authenticated #}
+</div>
+
+{% if not current_user.is_authenticated %}
+<div id="loginModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Bem-vindo(a) à Untouched!</h2>
+        <p>Para aproveitar todas as funcionalidades, como visualizar produtos e unidades, por favor, faça login ou continue como convidado.</p>
+        <a href="{{ url_for('viewLogin.login_page') }}" class="btn btn-login">Fazer Login</a>
+        <button class="btn btn-guest" onclick="closeModal()">Continuar como Convidado</button>
+    </div>
+</div>
+
+<script>
+    function closeModal() {
+        document.getElementById('loginModal').style.display = 'none';
+        // Você pode querer salvar no localStorage que o usuário escolheu "Continuar como Convidado"
+        // para não mostrar o modal novamente na mesma sessão.
+        // localStorage.setItem('guest_mode', 'true');
+    }
+
+    // Opcional: Para não mostrar o modal se o usuário já escolheu "Convidado" antes
+    // window.onload = function() {
+    //     if (localStorage.getItem('guest_mode') === 'true') {
+    //         document.getElementById('loginModal').style.display = 'none';
+    //     }
+    // }
+</script>
+{% endif %} {# Fim da condição not current_user.is_authenticated #}
+
+{% endblock %}

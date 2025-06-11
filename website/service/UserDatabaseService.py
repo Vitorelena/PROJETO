@@ -9,19 +9,19 @@ from ..model.Users.Funcionario import Funcionario
 class UserDatabaseService:
     @staticmethod
     def adicionar_staff(nome, cpf, login, senha, matricula):
-        novo_funcionario = Staff(nome = nome, cpf = cpf, tipo_usuario = 3, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        novo_funcionario = Staff(nome = nome, cpf = cpf, tipo_usuario = 4, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
         db.session.add(novo_funcionario)
         db.session.commit()
         return novo_funcionario
     @staticmethod
     def adicionar_subgerente(nome, cpf, login, senha, matricula):
-        novo_funcionario = SubGerente(nome = nome, cpf = cpf, tipo_usuario = 3, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        novo_funcionario = SubGerente(nome = nome, cpf = cpf, tipo_usuario = 5, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
         db.session.add(novo_funcionario)
         db.session.commit()
         return novo_funcionario
     @staticmethod
     def adicionar_gerente(nome, cpf, login, senha, matricula):
-        novo_funcionario = Gerente(nome = nome, cpf = cpf, tipo_usuario = 3, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        novo_funcionario = Gerente(nome = nome, cpf = cpf, tipo_usuario = 6, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
         db.session.add(novo_funcionario)
         db.session.commit()
         return novo_funcionario
