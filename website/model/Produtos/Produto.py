@@ -11,6 +11,8 @@ class Produto(db.Model):
     imagem_url = db.Column(db.String(200))
     categoria = db.Column(db.String(25))
     cor = db.Column(db.String(20), nullable=True)
+    tipo = db.Column(db.String(50), nullable=True) 
+
 
     estoque = db.relationship('Estoque', uselist=False, back_populates='produto', cascade='all, delete-orphan')
 

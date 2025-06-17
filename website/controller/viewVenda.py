@@ -4,8 +4,9 @@ from ..service.ProdutoDatabaseService import ProdutoDatabaseService
 from ..model.Vendas.Venda import Venda
 from ..model.Vendas.ItemVendido import ItemVendido
 from website import db
-from flask_login import current_user
+from flask_login import current_user, login_required
 from datetime import datetime
+from ..service.UserDatabaseService import UserDatabaseService
 
 view_venda = Blueprint('view_venda', __name__)
 
@@ -22,10 +23,13 @@ def salvar_carrinho(carrinho):
 @view_venda.route('/adicionar_ao_carrinho/<int:produto_id>', methods=['POST'])
 def adicionar_ao_carrinho(produto_id):
     carrinho = obter_carrinho()
-    quantidade = int(request.form.get('quantidade',1))
+    quantidade = int(request.form.get('quantidade', 1))
     carrinho.adicionar_item(produto_id, quantidade)
     salvar_carrinho(carrinho)
-    return redirect(url_for('view_venda.carrinho'))
+    if current_user.tipo_usuario == 2:
+        return redirect(url_for('view_venda.carrinho'))
+    elif current_user.tipo_usuario > 3:
+        return redirect(url_for('view_venda.carrinho_venda'))
 
 @view_venda.route('/remover_do_carrinho/<int:produto_id>')
 def remover_do_carrinho(produto_id):
@@ -54,27 +58,78 @@ def carrinho():
     total = carrinho.calcular_total(produto_service)
     return render_template('carrinho.html', carrinho=produtos_no_carrinho, total=total)
 
+@view_venda.route('/carrinho_venda')
+@login_required
+def carrinho_venda():
+    if current_user.tipo_usuario < 3:
+        flash("Acesso restrito a funcionários.", "danger")
+        return redirect(url_for('view_venda.carrinho'))
+
+    carrinho = obter_carrinho()
+    produtos_no_carrinho = []
+    produto_service = ProdutoDatabaseService()
+    for produto_id, quantidade in carrinho.obter_itens().items():
+        produto = produto_service.get_produto_por_id(int(produto_id))
+        if produto:
+            produtos_no_carrinho.append({'produto': produto, 'quantidade': quantidade})
+    total = carrinho.calcular_total(produto_service)
+
+    user_service = UserDatabaseService()
+    clientes = user_service.listar_clientes()
+
+    return render_template(
+        'carrinho_venda.html',
+        carrinho=produtos_no_carrinho,
+        total=total,
+        clientes=clientes
+    )
+
 @view_venda.route('/finalizar_venda')
+@login_required
 def finalizar_venda():
-   return carrinho()
+    if current_user.tipo_usuario >= 3:
+        user_service = UserDatabaseService()
+        clientes = user_service.listar_clientes()
+        return render_template('identificar_cliente.html', clientes=clientes)
+    else:
+        return redirect(url_for('view_venda.processar_compra'))
 
 @view_venda.route('/processar_venda', methods=['POST'])
+@login_required
 def processar_compra():
+    # ✅ Verifica se o código foi validado
+    if not session.get('codigo_validado'):
+        flash('Você precisa confirmar o código enviado ao email antes de finalizar a venda.', 'danger')
+        return redirect(url_for('emailc.pedir_email'))
+
     carrinho = obter_carrinho()
     produto_service = ProdutoDatabaseService()
+    user_service = UserDatabaseService()
     itens_carrinho = carrinho.obter_itens()
 
     if not itens_carrinho:
         flash('Seu carrinho está vazio.', 'warning')
         return redirect(url_for('view_venda.carrinho'))
 
+    cliente_id = None
+    funcionario_id = None
+
+    if current_user.tipo_usuario == 2:  # Cliente comprando
+        cliente_id = current_user.id
+    elif current_user.tipo_usuario >= 3:  # Funcionário vendendo
+        cliente_id = request.form.get('cliente_id')
+        funcionario_id = current_user.id
+    else:
+        flash('Tipo de usuário inválido para realizar compras.', 'danger')
+        return redirect(url_for('view_venda.carrinho'))
+
     nova_venda = Venda(
         data_venda=datetime.utcnow(),
-        cliente_id=current_user.id if current_user.is_authenticated else None,
-        # Você pode precisar adicionar lógica para o funcionário responsável
+        cliente_id=cliente_id,
+        funcionario_id=funcionario_id
     )
     db.session.add(nova_venda)
-    db.session.flush() # Garante que a 'nova_venda.id' seja gerada
+    db.session.flush()
 
     for produto_id, quantidade in itens_carrinho.items():
         produto = produto_service.get_produto_por_id(int(produto_id))
@@ -86,21 +141,26 @@ def processar_compra():
                 preco_unitario=produto.preco
             )
             db.session.add(item_vendido)
-
-            # Atualizar o estoque
             produto.estoque.quantidade -= quantidade
 
-    db.session.commit()
+    try:
+        db.session.commit()
+        session.pop('carrinho', None)
+        session.pop('codigo_validado', None)  # ✅ Limpa o flag de código
+        session.pop('codigo', None)           # ✅ Limpa o código
+        session.pop('codigo_expiracao', None) # ✅ Limpa a expiração
 
-    # Limpar o carrinho após a compra
-    session.pop('carrinho', None)
-    flash('Compra realizada com sucesso!', 'success')
-    return redirect(url_for('view_venda.compra_realizada'))
+        user_service.cliente_fez_compra(cliente_id)
+        if funcionario_id:
+            user_service.funcionario_fez_venda(funcionario_id)
 
-    # Limpar o carrinho após a compra
-    session.pop('carrinho', None)
-    flash('Compra realizada com sucesso!', 'success')
-    return redirect(url_for('view_venda.compra_realizada'))
+        flash('Compra realizada com sucesso!', 'success')
+        return redirect(url_for('view_venda.compra_realizada'))
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao processar a compra: {e}")
+        flash('Ocorreu um erro ao finalizar a compra.', 'danger')
+        return redirect(url_for('view_venda.carrinho'))
 
 @view_venda.route('/compra_realizada')
 def compra_realizada():

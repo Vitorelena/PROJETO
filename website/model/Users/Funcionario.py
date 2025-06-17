@@ -13,6 +13,11 @@ class Funcionario(User):
         numero_vendas = db.Column(db.Integer)
         vendas = db.relationship('Venda', backref='funcionario', foreign_keys=[Venda.__table__.c.funcionario_id])
         
+        def __init__(self, *args, matricula=None, nivel=None, numero_vendas=0, **kwargs):            
+            super().__init__(*args, **kwargs)            
+            self.matricula = matricula
+            self.nivel = nivel
+            self.numero_vendas = numero_vendas
         def __repr__(self):
             return f"<Funcionario id={self.id}, nome='{self.nome}', cpf='{self.cpf}', matricula='{self.matricula}', numero de vendas = {self.numero_vendas}>" #testar
         def gerar_relatorio(self):

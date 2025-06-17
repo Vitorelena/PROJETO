@@ -5,7 +5,7 @@ from sqlalchemy.sql import func
 class User(db.Model, UserMixin):
     __tablename__ = 'usuario'
     
-    id = db.Column(db.Integer, primary_key = True)
+    _id = db.Column('id',db.Integer, primary_key = True)
     nome = db.Column(db.String(100))
     cpf = db.Column(db.String(11))
     tipo_usuario = db.Column(db.Integer)
@@ -15,6 +15,10 @@ class User(db.Model, UserMixin):
     __mapper_args__={
         'polymorphic_on': tipo_usuario
     }
+    @property
+    def id(self):
+        return self._id
+    
     def __repr__(self):
         return f"<User id={self.id}, nome='{self.nome}', cpf='{self.cpf}', tipo_usuario={self.tipo_usuario}>" #só em fase de teste
     def gerar_relatorio(self):

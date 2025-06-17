@@ -6,7 +6,7 @@
     {% if request.endpoint == 'view_venda.finalizar_venda' %}
         <h1>Finalizar Compra</h1>
     {% else %}
-        <h1>Seu Carrinho de Compras</h1>
+        <h1>Carrinho de Compras do Cliente</h1>
     {% endif %}
 
     {% if carrinho %}
@@ -47,11 +47,24 @@
             </tfoot>
         </table>
 
-            <a href="{{ url_for('view.home') }}" class="btn btn-secondary">Continuar Comprando</a>
+        {# Formulário para finalização da venda pelo funcionário #}
+        {% if clientes %}
             <form method="POST" action="{{ url_for('view_venda.processar_compra') }}">
-                <button type="submit" class="btn btn-primary">Finalizar compra</button>
+                <div class="form-group mt-4">
+                    <label for="cliente_id"><strong>Selecionar Cliente:</strong></label>
+                    <select name="cliente_id" id="cliente_id" class="form-control" required>
+                        <option value="" disabled selected>-- Escolha um cliente --</option>
+                        {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success mt-3">Confirmar Venda</button>
             </form>
-        
+        {% else %}
+            <a href="{{ url_for('view.home') }}" class="btn btn-secondary">Continuar vendendo</a>
+            <a href="{{ url_for('view_venda.finalizar_venda') }}" class="btn btn-primary">Finalizar venda</a>
+        {% endif %}
     {% else %}
         <p>Seu carrinho está vazio.</p>
         <a href="{{ url_for('view.home') }}" class="btn btn-secondary">Voltar para a loja</a>
