@@ -57,7 +57,7 @@ def criar_produto():
 
             if novo_produto:
                 flash("Produto criado com sucesso!", 'success')
-                return redirect(url_for('view_product.criar_estoque', pr'oduto_id=novo_produto.id))
+                return redirect(url_for('view_product.criar_estoque', produto_id=novo_produto.id))
             else:
                 flash("Erro ao criar o produto. Verifique os dados.", 'danger')
                 return render_template('criar_produto.html') # Retorna para o formulário
