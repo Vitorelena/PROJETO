@@ -10,3 +10,10 @@ class Loja(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     nome = db.Column(db.String) 
+    
+    def __init__(self, endereco, cnpj, latitude, longitude, nome):
+        self.endereco = endereco
+        self.cnpj = cnpj
+        self.latitude = latitude
+        self.longitude = longitude
+        self.nome = nome

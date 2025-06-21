@@ -8,3 +8,8 @@ class Estoque(db.Model):
     produto = db.relationship('Produto', back_populates='estoque')
     quantidade = db.Column(db.Integer, nullable=False, default=0)  # Quantidade de produto no estoque
     valor_total = db.Column(db.Numeric(12, 2), default=0.00)  # Valor total do estoque
+
+    def __init__(self, produto_id, quantidade=0, valor_total=0.00):
+            self.produto_id = produto_id
+            self.quantidade = quantidade
+            self.valor_total = valor_total

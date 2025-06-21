@@ -231,7 +231,7 @@
             <p class="category">Categoria: {{ produto.categoria }}</p>
             {% endif %}
             
-            <form action="{{ url_for('view_venda.adicionar_ao_carrinho', produto_id=produto.id) }}" method="POST" class="add-to-cart-form">
+            <form action="{{ url_for('vendaC.adicionar_ao_carrinho', produto_id=produto.id) }}" method="POST" class="add-to-cart-form">
                 <input type="number" name="quantidade" value="1" min="1" max="{{ produto.estoque.quantidade if produto.estoque else 100 }}" title="Quantidade">
                 <button type="submit" class="add-to-cart-button">Adicionar ao Carrinho</button>
             </form>
@@ -242,7 +242,7 @@
     {% endfor %}
 </div>
 
-<a href="{{ url_for('view_product.criar_produto') }}" class="create-product-link">Criar novo produto</a>
+<a href="{{ url_for('productC.criar_produto') }}" class="create-product-link">Criar novo produto</a>
 {% endblock %}
 </body>
 </html>

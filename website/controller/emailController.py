@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from flask_login import login_required, current_user
-from .viewVenda import obter_carrinho
+from .vendaController import obter_carrinho
 import random
 import string
 from website import mail
@@ -10,7 +10,9 @@ from ..model.Vendas.Venda import Venda
 from ..model.Vendas.ItemVendido import ItemVendido
 from ..service.ProdutoDatabaseService import ProdutoDatabaseService
 from website import db
+from ..controller.emailutilsController import gerar_resumo_venda_email_html
 from ..service.UserDatabaseService import UserDatabaseService
+
 emailc = Blueprint('emailc', __name__)
 
 def gerar_codigo(tam=6):
@@ -35,7 +37,7 @@ def enviar_codigo_route():
     email = request.form.get('email')
     if not email:
         flash('Email não fornecido.', 'warning')
-        return redirect(url_for('view_venda.finalizar_venda'))
+        return redirect(url_for('vendaC.finalizar_venda'))
 
     codigo = gerar_codigo()
     session['codigo_confirmacao'] = codigo
@@ -47,7 +49,7 @@ def enviar_codigo_route():
         return redirect(url_for('emailc.validar_codigo'))
     else:
         flash('Erro ao enviar o código, tente novamente.', 'danger')
-        return redirect(url_for('view_venda.finalizar_venda'))
+        return redirect(url_for('vendaC.finalizar_venda'))
 
 @emailc.route('/pedir_email', methods=['GET', 'POST'])
 @login_required
@@ -72,8 +74,9 @@ def pedir_email():
         itens_carrinho = carrinho.obter_itens()
         if not itens_carrinho:
             flash('Seu carrinho está vazio.', 'warning')
-            return redirect(url_for('view_venda.carrinho'))
+            return redirect(url_for('vendaC.carrinho'))
 
+        session['email_confirmacao'] = email
         # Salvar os dados da venda pendente na sessão
         session['venda_pendente'] = {
             'cliente_id': cliente_id,
@@ -123,7 +126,7 @@ def validar_codigo():
             dados_venda = session.get('venda_pendente')
             if not dados_venda:
                 flash('Dados da venda não encontrados. Por favor, refaça o processo.', 'danger')
-                return redirect(url_for('view_venda.carrinho'))
+                return redirect(url_for('vendaC.carrinho'))
 
             produto_service = ProdutoDatabaseService()
             user_service = UserDatabaseService()
@@ -151,9 +154,23 @@ def validar_codigo():
 
             try:
                 db.session.commit()
+
+                # Envio do email de confirmação da compra
+                corpo_texto, corpo_html = gerar_resumo_venda_email_html(nova_venda)
+                try:
+                    msg = Message(
+                        subject=f"CONFIRMAÇÃO DA SUA COMPRA #{nova_venda.id}",
+                        recipients=[dados_venda['email']],
+                        body=corpo_texto,
+                        html=corpo_html
+                    )
+                    mail.send(msg)
+                except Exception as e:
+                    print(f"Erro ao enviar email de confirmação: {e}")
+                    flash('Erro ao enviar email de confirmação.', 'warning')
+
                 session.pop('venda_pendente', None)
                 session.pop('codigo_confirmacao', None)
-                session.pop('email_confirmacao', None)
                 session.pop('carrinho', None)
 
                 user_service.cliente_fez_compra(int(dados_venda['cliente_id']))
@@ -161,7 +178,7 @@ def validar_codigo():
                     user_service.funcionario_fez_venda(dados_venda['funcionario_id'])
 
                 flash('Compra confirmada com sucesso!', 'success')
-                return redirect(url_for('view_venda.compra_realizada'))
+                return redirect(url_for('vendaC.compra_realizada'))
 
             except Exception as e:
                 db.session.rollback()

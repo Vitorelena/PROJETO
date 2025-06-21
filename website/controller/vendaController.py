@@ -7,8 +7,10 @@ from website import db
 from flask_login import current_user, login_required
 from datetime import datetime
 from ..service.UserDatabaseService import UserDatabaseService
+from flask_mail import Message
 
-view_venda = Blueprint('view_venda', __name__)
+
+vendaC = Blueprint('vendaC', __name__)
 
 def obter_carrinho():
     if 'carrinho' not in session:
@@ -20,33 +22,33 @@ def obter_carrinho():
 def salvar_carrinho(carrinho):
     session['carrinho'] = carrinho.itens
 
-@view_venda.route('/adicionar_ao_carrinho/<int:produto_id>', methods=['POST'])
+@vendaC.route('/adicionar_ao_carrinho/<int:produto_id>', methods=['POST'])
 def adicionar_ao_carrinho(produto_id):
     carrinho = obter_carrinho()
     quantidade = int(request.form.get('quantidade', 1))
     carrinho.adicionar_item(produto_id, quantidade)
     salvar_carrinho(carrinho)
     if current_user.tipo_usuario == 2:
-        return redirect(url_for('view_venda.carrinho'))
+        return redirect(url_for('vendaC.carrinho'))
     elif current_user.tipo_usuario > 3:
-        return redirect(url_for('view_venda.carrinho_venda'))
+        return redirect(url_for('vendaC.carrinho_venda'))
 
-@view_venda.route('/remover_do_carrinho/<int:produto_id>')
+@vendaC.route('/remover_do_carrinho/<int:produto_id>')
 def remover_do_carrinho(produto_id):
     carrinho = obter_carrinho()
     carrinho.remover_item(produto_id)
     salvar_carrinho(carrinho)
-    return redirect(url_for('view_venda.carrinho'))
+    return redirect(url_for('vendaC.carrinho'))
 
-@view_venda.route('/atualziar_quantidade/<int:produto_id>', methods=['POST'])
+@vendaC.route('/atualziar_quantidade/<int:produto_id>', methods=['POST'])
 def atualizar_quantidade(produto_id):
     carrinho = obter_carrinho()
     quantidade = int(request.form.get('quantidade'))
     carrinho.atualizar_quantidade(produto_id, quantidade)
     salvar_carrinho(carrinho)
-    return redirect(url_for('view_venda.carrinho'))
+    return redirect(url_for('vendaC.carrinho'))
 
-@view_venda.route('/carrinho')
+@vendaC.route('/carrinho')
 def carrinho():
     carrinho = obter_carrinho()
     produtos_no_carrinho = []
@@ -58,12 +60,12 @@ def carrinho():
     total = carrinho.calcular_total(produto_service)
     return render_template('carrinho.html', carrinho=produtos_no_carrinho, total=total)
 
-@view_venda.route('/carrinho_venda')
+@vendaC.route('/carrinho_venda')
 @login_required
 def carrinho_venda():
     if current_user.tipo_usuario < 3:
         flash("Acesso restrito a funcionários.", "danger")
-        return redirect(url_for('view_venda.carrinho'))
+        return redirect(url_for('vendaC.carrinho'))
 
     carrinho = obter_carrinho()
     produtos_no_carrinho = []
@@ -84,7 +86,7 @@ def carrinho_venda():
         clientes=clientes
     )
 
-@view_venda.route('/finalizar_venda')
+@vendaC.route('/finalizar_venda')
 @login_required
 def finalizar_venda():
     if current_user.tipo_usuario >= 3:
@@ -92,9 +94,9 @@ def finalizar_venda():
         clientes = user_service.listar_clientes()
         return render_template('identificar_cliente.html', clientes=clientes)
     else:
-        return redirect(url_for('view_venda.processar_compra'))
+        return redirect(url_for('vendaC.processar_compra'))
 
-@view_venda.route('/processar_venda', methods=['POST'])
+@vendaC.route('/processar_compra', methods=['POST'])
 @login_required
 def processar_compra():
     # ✅ Verifica se o código foi validado
@@ -109,7 +111,7 @@ def processar_compra():
 
     if not itens_carrinho:
         flash('Seu carrinho está vazio.', 'warning')
-        return redirect(url_for('view_venda.carrinho'))
+        return redirect(url_for('vendaC.carrinho'))
 
     cliente_id = None
     funcionario_id = None
@@ -121,7 +123,7 @@ def processar_compra():
         funcionario_id = current_user.id
     else:
         flash('Tipo de usuário inválido para realizar compras.', 'danger')
-        return redirect(url_for('view_venda.carrinho'))
+        return redirect(url_for('vendaC.carrinho'))
 
     nova_venda = Venda(
         data_venda=datetime.utcnow(),
@@ -142,26 +144,25 @@ def processar_compra():
             )
             db.session.add(item_vendido)
             produto.estoque.quantidade -= quantidade
-
     try:
         db.session.commit()
-        session.pop('carrinho', None)
-        session.pop('codigo_validado', None)  # ✅ Limpa o flag de código
-        session.pop('codigo', None)           # ✅ Limpa o código
-        session.pop('codigo_expiracao', None) # ✅ Limpa a expiração
-
         user_service.cliente_fez_compra(cliente_id)
         if funcionario_id:
             user_service.funcionario_fez_venda(funcionario_id)
-
+        session.pop('carrinho', None)
+        session.pop('codigo_validado', None)
+        session.pop('codigo', None)
+        session.pop('codigo_expiracao', None)
         flash('Compra realizada com sucesso!', 'success')
-        return redirect(url_for('view_venda.compra_realizada'))
+        return redirect(url_for('vendaC.compra_realizada'))
+
     except Exception as e:
         db.session.rollback()
         print(f"Erro ao processar a compra: {e}")
         flash('Ocorreu um erro ao finalizar a compra.', 'danger')
-        return redirect(url_for('view_venda.carrinho'))
+        return redirect(url_for('vendaC.carrinho'))
 
-@view_venda.route('/compra_realizada')
+@vendaC.route('/compra_realizada')
+@login_required
 def compra_realizada():
     return render_template('compra_sucesso.html')

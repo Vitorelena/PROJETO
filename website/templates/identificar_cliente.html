@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1>Informe o Cliente</h1>
-<form method="POST" action="{{ url_for('view_venda.processar_compra') }}">
+<form method="POST" action="{{ url_for('vendaC.processar_compra') }}">
     <div>
         <label for="cliente_id">Cliente:</label>
         <select name="cliente_id" required>

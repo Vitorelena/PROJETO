@@ -52,7 +52,7 @@
                     </td>
                     <td>{{ funcionario.nivel if funcionario.nivel is not none else 'N/A' }}</td>
                     <td>
-                        <form method="POST" action="{{ url_for('view.promover_funcionario_action', funcionario_id=funcionario.id) }}" 
+                        <form method="POST" action="{{ url_for('homeC.promover_funcionario_action', funcionario_id=funcionario.id) }}" 
                               onsubmit="return confirm('Tem certeza que deseja promover {{ funcionario.nome }}?');">
                             <button type="submit" class="btn btn-sm btn-success">Promover</button>
                         </form>
@@ -68,8 +68,8 @@
     </div>
 
     <div class="text-center mt-4">
-        <a href="{{ url_for('view.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel</a>
-        <a href="{{ url_for('view.gerenciar_funcionarios') }}" class="btn btn-info">Ver Todos os Funcionários</a>
+        <a href="{{ url_for('homeC.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel</a>
+        <a href="{{ url_for('homeC.gerenciar_funcionarios') }}" class="btn btn-info">Ver Todos os Funcionários</a>
     </div>
 
 </div>

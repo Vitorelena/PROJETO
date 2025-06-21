@@ -6,41 +6,44 @@ from ..model.Users.Gerente import Gerente
 from ..model.Users.Cliente import Cliente
 from ..model.Users.Funcionario import Funcionario
 from ..model.Users.Ceo import Ceo
-from ..model.Vendas.Venda import Venda  # Importa aqui se evitar circular import
+from ..model.Vendas.Venda import Venda  
 
 class UserDatabaseService:
     @staticmethod
     def adicionar_staff(nome, cpf, login, senha, matricula):
-        novo_funcionario = Staff(nome = nome, cpf = cpf, tipo_usuario = 4, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        novo_funcionario = Staff(nome, cpf, login, senha, matricula)
         db.session.add(novo_funcionario)
         db.session.commit()
         return novo_funcionario
+
     @staticmethod
     def adicionar_subgerente(nome, cpf, login, senha, matricula):
-        novo_funcionario = SubGerente(nome = nome, cpf = cpf, tipo_usuario = 5, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        novo_funcionario = SubGerente(nome, cpf, login, senha, matricula)
         db.session.add(novo_funcionario)
         db.session.commit()
         return novo_funcionario  
+
     @staticmethod
     def adicionar_gerente(nome, cpf, login, senha, matricula):
-        novo_funcionario = Gerente(nome = nome, cpf = cpf, tipo_usuario = 6, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        novo_funcionario = Gerente(nome, cpf, login, senha, matricula)
         db.session.add(novo_funcionario)
         db.session.commit()
         return novo_funcionario
+
     @staticmethod
     def adicionar_ceo(nome, cpf, login, senha, matricula):
-        novo_funcionario = Ceo(nome = nome, cpf = cpf, tipo_usuario = 7, login = login, senha = senha, matricula = matricula, numero_vendas = 0)
+        novo_funcionario = Ceo(nome, cpf, login, senha, matricula)
         db.session.add(novo_funcionario)
         db.session.commit()
         return novo_funcionario
-        
-    
+
     @staticmethod
     def adicionar_cliente(nome, cpf, login, senha):
-        novo_cliente = Cliente(nome = nome, cpf = cpf, tipo_usuario = 2, login = login, senha = senha, numero_compras = 0)
+        novo_cliente = Cliente(nome, cpf, login, senha)
         db.session.add(novo_cliente)
         db.session.commit()
         return novo_cliente
+
     
     @staticmethod
     def obter_usuario_por_id(usuario_id):

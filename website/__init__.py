@@ -29,23 +29,23 @@ def create_app():
 
     global login_manager # Indica que você está usando a variável global login_manager
     login_manager.init_app(app)
-    login_manager.login_view = 'viewLogin.login_page'
+    login_manager.login_view = 'loginC.login_page'
 
-    from .controller.viewHome import views
-    from .controller.viewLogin import viewLogin
-    from .controller.viewSignup import viewSign
-    from .controller.viewProduct import view_product
-    from .controller.viewVenda import view_venda
+    from .controller.homeController import homeC
+    from .controller.loginController import loginC
+    from .controller.signupController import signC
+    from .controller.productController import productC
+    from .controller.vendaController import vendaC
     from .controller.emailController import emailc
-    from .controller.clienteController import viewcliente
+    from .controller.clienteController import clienteC
 
-    app.register_blueprint(views, url_prefix='/')
-    app.register_blueprint(viewLogin, url_prefix='/login')
-    app.register_blueprint(viewSign, url_prefix='/sign')
-    app.register_blueprint(view_product, url_prefix='/prod')
-    app.register_blueprint(view_venda,url_prefix='/venda')
+    app.register_blueprint(homeC, url_prefix='/')
+    app.register_blueprint(loginC, url_prefix='/login')
+    app.register_blueprint(signC, url_prefix='/sign')
+    app.register_blueprint(productC, url_prefix='/prod')
+    app.register_blueprint(vendaC,url_prefix='/venda')
     app.register_blueprint(emailc, url_prefix='/email')
-    app.register_blueprint(viewcliente, url_prefix='/cliente')
+    app.register_blueprint(clienteC, url_prefix='/cliente')
 
 
     from .model.Produtos.VestuarioFeminino import VestuarioFeminino

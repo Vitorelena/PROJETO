@@ -5,6 +5,7 @@ from ..model.Produtos.Produto import Produto
 class EstoqueDatabaseService:
 
     @staticmethod
+    @staticmethod
     def criar_estoque(produto_id, quantidade, valor_total):
         estoque_existente = Estoque.query.filter_by(produto_id=produto_id).first()
         if not estoque_existente:
@@ -18,7 +19,7 @@ class EstoqueDatabaseService:
             return True
         else:
             return False, "Estoque já existe para este produto."
-
+        
     @staticmethod
     def adicionar_ao_estoque(produto_id, quantidade):
         estoque = Estoque.query.filter_by(produto_id=produto_id).first()

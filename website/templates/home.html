@@ -366,37 +366,37 @@
                 <li style="margin-bottom: 5px;">
                     <div style="display: flex; align-items: center;">
                         <img src="{{ url_for('static', filename='images/icon1.png') }}" alt="Vestuário feminino" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
-                        <a href="{{ url_for('view.home', categoria_id=1) }}">Vestuário feminino</a>
+                        <a href="{{ url_for('homeC.home', categoria_id=1) }}">Vestuário feminino</a>
                     </div>
                 </li>
                 <li style="margin-bottom: 5px;">
                     <div style="display: flex; align-items: center;">
                         <img src="{{ url_for('static', filename='images/icon2.png') }}" alt="Vestuário masculino" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
-                        <a href="{{ url_for('view.home', categoria_id=2) }}">Vestuário masculino</a>
+                        <a href="{{ url_for('homeC.home', categoria_id=2) }}">Vestuário masculino</a>
                     </div>
                 </li>
                 <li style="margin-bottom: 5px;">
                     <div style="display: flex; align-items: center;">
                         <img src="{{ url_for('static', filename='images/icon3.png') }}" alt="Calçados" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
-                        <a href="{{ url_for('view.home', categoria_id=3) }}">Calçados</a>
+                        <a href="{{ url_for('homeC.home', categoria_id=3) }}">Calçados</a>
                     </div>
                 </li>
                 <li style="margin-bottom: 5px;">
                     <div style="display: flex; align-items: center;">
                         <img src="{{ url_for('static', filename='images/icon4.png') }}" alt="Equipamentos esportivos" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
-                        <a href="{{ url_for('view.home', categoria_id=4) }}">Equipamentos esportivos</a>
+                        <a href="{{ url_for('homeC.home', categoria_id=4) }}">Equipamentos esportivos</a>
                     </div>
                 </li>
                 <li style="margin-bottom: 5px;">
                     <div style="display: flex; align-items: center;">
                         <img src="{{ url_for('static', filename='images/icon5.png') }}" alt="Suplementos" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
-                        <a href="{{ url_for('view.home', categoria_id=5) }}">Suplementos</a>
+                        <a href="{{ url_for('homeC.home', categoria_id=5) }}">Suplementos</a>
                     </div>
                 </li>
                 <li style="margin-bottom: 5px;">
                     <div style="display: flex; align-items: center;">
                         <img src="{{ url_for('static', filename='images/icon6.png') }}" alt="Outros" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 10px;">
-                        <a href="{{ url_for('view.home', categoria_id=6) }}">Outros</a>
+                        <a href="{{ url_for('homeC.home', categoria_id=6) }}">Outros</a>
                     </div>
                 </li>
             </ul>
@@ -454,7 +454,7 @@
                     <p class="price">R$ {{ "%.2f" | format(produto.preco | float) }}</p>
                     <p class="category">Categoria: {{ produto.categoria }}</p> {# Exibe a categoria do produto #}
 
-                    <form action="{{ url_for('view_venda.adicionar_ao_carrinho', produto_id=produto.id) }}" method="POST" class="add-to-cart-form mt-auto">
+                    <form action="{{ url_for('vendaC.adicionar_ao_carrinho', produto_id=produto.id) }}" method="POST" class="add-to-cart-form mt-auto">
                         <input type="number" name="quantidade" value="1" min="1" max="{{ produto.estoque.quantidade if produto.estoque else 1 }}" title="Quantidade">
                         <button type="submit" class="add-to-cart-button">Adicionar ao Carrinho</button>
                     </form>
@@ -464,7 +464,7 @@
             <p style="text-align: center; grid-column: 1 / -1;">Nenhum produto encontrado para exibir.</p>
             {% endfor %}
         </div>
-        <p class="text-center mt-4"><a href="{{ url_for('view_venda.carrinho') }}" class="btn btn-primary">Ver Carrinho</a></p>
+        <p class="text-center mt-4"><a href="{{ url_for('vendaC.carrinho') }}" class="btn btn-primary">Ver Carrinho</a></p>
     </div>
 
     {% endif %} {# Fim da condição current_user.is_authenticated #}
@@ -476,7 +476,7 @@
     <div class="modal-content">
         <h2>Bem-vindo(a) à Untouched!</h2>
         <p>Para aproveitar todas as funcionalidades, como visualizar produtos e unidades, por favor, faça login ou continue como convidado.</p>
-        <a href="{{ url_for('viewLogin.login_page') }}" class="btn btn-login">Fazer Login/Cadastar</a>
+        <a href="{{ url_for('loginC.login_page') }}" class="btn btn-login">Fazer Login/Cadastar</a>
         <button class="btn btn-guest" onclick="closeModal()">Continuar como Convidado</button>
     </div>
 </div>
@@ -484,17 +484,7 @@
 <script>
     function closeModal() {
         document.getElementById('loginModal').style.display = 'none';
-        // Você pode querer salvar no localStorage que o usuário escolheu "Continuar como Convidado"
-        // para não mostrar o modal novamente na mesma sessão.
-        // localStorage.setItem('guest_mode', 'true');
     }
-
-    // Opcional: Para não mostrar o modal se o usuário já escolheu "Convidado" antes
-    // window.onload = function() {
-    //     if (localStorage.getItem('guest_mode') === 'true') {
-    //         document.getElementById('loginModal').style.display = 'none';
-    //     }
-    // }
 </script>
 {% endif %} {# Fim da condição not current_user.is_authenticated #}
 

@@ -5,8 +5,8 @@
 
 {# Bloco para conteúdo específico da sidebar para clientes #}
 {% block sidebar_specific_content %}    
-    <a class="nav-item nav-link" href="{{ url_for('viewcliente.lista_pedidos') }}">Meus Pedidos</a>
-    <a class="nav-item nav-link" href="{{ url_for('viewcliente.historico_compras') }}">Minhas Compras</a>
+    <a class="nav-item nav-link" href="{{ url_for('clienteC.lista_pedidos') }}">Meus Pedidos</a>
+    <a class="nav-item nav-link" href="{{ url_for('clienteC.historico_compras') }}">Minhas Compras</a>
     {% endblock %}
 
 {% block content %}
@@ -37,9 +37,9 @@
                 <div class="card-body">
                     <p>Gerencie sua conta e histórico de compras:</p>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><a  href="{{ url_for('viewcliente.editar_cliente', usuario_id=current_user.id) }}">Editar meus dados</a></li>                       
-                        <li class="list-group-item"><a href="{{ url_for('viewcliente.historico_compras') }}">Ver Histórico de Compras</a></li>
-                        <li class="list-group-item"><a href="{{ url_for('viewcliente.lista_pedidos') }}">Ver Histórico de Pedidos</a></li>
+                        <li class="list-group-item"><a  href="{{ url_for('clienteC.editar_cliente', usuario_id=current_user.id) }}">Editar meus dados</a></li>                       
+                        <li class="list-group-item"><a href="{{ url_for('clienteC.historico_compras') }}">Ver Histórico de Compras</a></li>
+                        <li class="list-group-item"><a href="{{ url_for('clienteC.lista_pedidos') }}">Ver Histórico de Pedidos</a></li>
                     </ul>                    
                 </div>
             </div>

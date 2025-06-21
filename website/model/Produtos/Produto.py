@@ -20,7 +20,14 @@ class Produto(db.Model):
         'polymorphic_on': categoria,
         'polymorphic_identity': '0'  
     }
-    
+    def __init__(self, nome, descricao, preco, codigo_de_barras, imagem_url, categoria, cor=None):
+        self.nome = nome
+        self.descricao = descricao
+        self.preco = preco
+        self.codigo_de_barras = codigo_de_barras
+        self.imagem_url = imagem_url
+        self.categoria = categoria
+        self.cor = cor
     def gerar_relatorio(self):
         relatorio = f"Produto: {self.nome}\nPreço: R${self.preco}\n"
         return relatorio

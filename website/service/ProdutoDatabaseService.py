@@ -14,141 +14,115 @@ from ..model.Produtos.Outros import Outros
 
 
 class ProdutoDatabaseService:
+
     @staticmethod
-    def criar_produto(nome, descricao, preco, codigo_de_barras, imagem_url, categoria_id, **kwargs):
-        novo_produto = None
-        
-        try:
-            categoria_id_int = int(categoria_id)
-        except (ValueError, TypeError):
-            categoria_id_int = 0 
+    def criar_produto(nome, descricao, preco, codigo_de_barras, imagem_url, tipo, **kwargs):
+        tipo_para_classe = {
+            'vestuario_feminino': VestuarioFeminino,
+            'vestuario_masculino': VestuarioMasculino,
+            'calcados': Calcados,
+            'suplementos': Suplementos,
+            'equipamentos': Equipamentos,
+            'outros': Outros
+        }
 
-        if categoria_id_int == 1: # Vestuário Feminino
-            novo_produto = VestuarioFeminino(
-                nome=nome, descricao=descricao, preco=preco, codigo_de_barras=codigo_de_barras,
-                imagem_url=imagem_url, categoria=categoria_id,
-                tamanho_feminino=kwargs.get('tamanho_vestuario'), # CORRIGIDO: passar 'tamanho_feminino'
-                tecido_feminino=kwargs.get('tecido_vestuario'),   # CORRIGIDO: passar 'tecido_feminino'
-                cor_vestuario=kwargs.get('cor_vestuario')         # Passar a cor via kwargs para o pop no __init__
-            )
-        elif categoria_id_int == 2: # Vestuário Masculino
-            novo_produto = VestuarioMasculino(
-                nome=nome, descricao=descricao, preco=preco, codigo_de_barras=codigo_de_barras,
-                imagem_url=imagem_url, categoria=categoria_id,
-                tamanho=kwargs.get('tamanho_vestuario'), # OK: passa para 'tamanho' na subclasse
-                tecido=kwargs.get('tecido_vestuario'),   # OK: passa para 'tecido' na subclasse
-                cor_vestuario=kwargs.get('cor_vestuario') # Passar a cor via kwargs para o pop no __init__
-            )
-        elif categoria_id_int == 3: # Calçados
-            novo_produto = Calcados(
-                nome=nome, descricao=descricao, preco=preco, codigo_de_barras=codigo_de_barras,
-                imagem_url=imagem_url, categoria=categoria_id,
-                numero=kwargs.get('numero_calcado'), 
-                material=kwargs.get('material_calcado'),
-                cor_calcado=kwargs.get('cor_calcado') # Passar a cor via kwargs para o pop no __init__
-            )
-        elif categoria_id_int == 4: # Equipamentos esportivos
-            novo_produto = Equipamentos(
-                nome=nome, descricao=descricao, preco=preco, codigo_de_barras=codigo_de_barras,
-                imagem_url=imagem_url, categoria=categoria_id,
-                tipo_equipamento=kwargs.get('tipo_equipamento'), # Passar o nome correto para o __init__
-                marca_equipamento=kwargs.get('marca_equipamento') # Passar o nome correto para o __init__
-            )
-        elif categoria_id_int == 5: # Suplementos
-            novo_produto = Suplementos(
-                nome=nome, descricao=descricao, preco=preco, codigo_de_barras=codigo_de_barras,
-                imagem_url=imagem_url, categoria=categoria_id,
-                peso=kwargs.get('peso_suplemento'), 
-                sabor=kwargs.get('sabor_suplemento'), 
-                tipo_suplemento=kwargs.get('tipo_suplemento') # Passar o nome correto para o __init__
-            )
-        elif categoria_id_int == 6: # Outros
-            novo_produto = Outros(
-                nome=nome, descricao=descricao, preco=preco, codigo_de_barras=codigo_de_barras,
-                imagem_url=imagem_url, categoria=categoria_id,
-                detalhes=kwargs.get('detalhes_outros')
-            )
-        else: # Cria um Produto base se a categoria não corresponder ou for inválida
-            # Se 'cor' é um atributo na classe base Produto, passe-o aqui também.
-            # Tenta pegar a cor de qualquer um dos campos de cor do formulário
-            cor_base = kwargs.get('cor_vestuario') or kwargs.get('cor_calcado')
-            novo_produto = Produto(
-                nome=nome, descricao=descricao, preco=preco, codigo_de_barras=codigo_de_barras,
-                imagem_url=imagem_url, categoria=categoria_id, cor=cor_base
-            )
-        
-        if novo_produto:
-            db.session.add(novo_produto)
-            db.session.flush()
-            db.session.commit()
-        return novo_produto
+        ClasseProduto = tipo_para_classe.get(tipo)
+        if not ClasseProduto:
+            raise ValueError(f"Tipo de produto inválido: {tipo}")
 
-    # ... (métodos get_produto_por_id, get_produto_por_codigo_barras, get_todos_produtos, get_produtos_por_categoria) ...
+        args_comuns = {
+            'nome': nome,
+            'descricao': descricao,
+            'preco': preco,
+            'codigo_de_barras': codigo_de_barras,
+            'imagem_url': imagem_url,
+            # NÃO PASSAR categoria aqui
+        }
 
-    # 2. Modificações no ProdutoDatabaseService.atualizar_produto
+        todos_args = {**args_comuns, **kwargs}
+
+        produto = ClasseProduto(**todos_args)  # categoria é definido no __init__ da subclasse
+
+        db.session.add(produto)
+        db.session.commit()
+
+        return produto
+
+    
     @staticmethod
-    def atualizar_produto(produto_id, **kwargs):
+    def atualizar_produto(produto_id,
+                      nome=None, descricao=None, preco=None, codigo_de_barras=None,
+                      imagem_url=None, categoria=None,
+                      tamanho_feminino=None, tecido_feminino=None, cor_vestuario=None,
+                      tamanho_masculino=None, tecido_masculino=None,
+                      numero_calcado=None, material_calcado=None, cor_calcado=None,
+                      tipo_equipamento=None, marca_equipamento=None,
+                      peso_suplemento=None, sabor_suplemento=None, tipo_suplemento=None,
+                      detalhes_outros=None):
+    
         produto = Produto.query.get(produto_id)
         if not produto:
             return False
-        
-        # 1. Atualizar atributos comuns a TODOS os produtos (presentes na classe Produto)
-        for attr in ['nome', 'descricao', 'preco', 'codigo_de_barras', 'imagem_url', 'categoria']:
-            if attr in kwargs and kwargs[attr] is not None:
-                setattr(produto, attr, kwargs[attr])
 
-        # A cor é um atributo da classe base Produto (cor=db.Column(..., nullable=True)).
-        # Ela pode vir de 'cor_vestuario' ou 'cor_calcado' no formulário.
-        # Pega a cor do kwargs e atribui ao produto base.
-        if 'cor_vestuario' in kwargs and kwargs['cor_vestuario'] is not None:
-            produto.cor = kwargs['cor_vestuario']
-        elif 'cor_calcado' in kwargs and kwargs['cor_calcado'] is not None:
-            produto.cor = kwargs['cor_calcado']
-        # Se você tiver um campo 'cor' genérico no form para Produtos base, adicione aqui.
+        # Atualiza atributos da classe base
+        if nome is not None:
+            produto.nome = nome
+        if descricao is not None:
+            produto.descricao = descricao
+        if preco is not None:
+            produto.preco = preco
+        if codigo_de_barras is not None:
+            produto.codigo_de_barras = codigo_de_barras
+        if imagem_url is not None:
+            produto.imagem_url = imagem_url
+        if categoria is not None:
+            produto.categoria = categoria
 
+        # Atualiza cor
+        if cor_vestuario is not None:
+            produto.cor = cor_vestuario
+        elif cor_calcado is not None:
+            produto.cor = cor_calcado
 
-        # 2. Atualizar atributos específicos da subclasse (USANDO isinstance)
-        # Isso é crucial para garantir que os atributos corretos sejam atualizados.
+        # Atualiza atributos específicos
         if isinstance(produto, VestuarioFeminino):
-            if 'tamanho_vestuario' in kwargs and kwargs['tamanho_vestuario'] is not None:
-                produto.tamanho_feminino = kwargs['tamanho_vestuario']
-            if 'tecido_vestuario' in kwargs and kwargs['tecido_vestuario'] is not None:
-                produto.tecido_feminino = kwargs['tecido_vestuario']
-        
+            if tamanho_feminino is not None:
+                produto.tamanho_feminino = tamanho_feminino
+            if tecido_feminino is not None:
+                produto.tecido_feminino = tecido_feminino
+
         elif isinstance(produto, VestuarioMasculino):
-            if 'tamanho_vestuario' in kwargs and kwargs['tamanho_vestuario'] is not None:
-                produto.tamanho = kwargs['tamanho_vestuario'] # 'tamanho' sem _masculino
-            if 'tecido_vestuario' in kwargs and kwargs['tecido_vestuario'] is not None:
-                produto.tecido = kwargs['tecido_vestuario'] # 'tecido' sem _masculino
+            if tamanho_masculino is not None:
+                produto.tamanho_masculino = tamanho_masculino
+            if tecido_masculino is not None:
+                produto.tecido_masculino = tecido_masculino
 
         elif isinstance(produto, Calcados):
-            if 'numero_calcado' in kwargs and kwargs['numero_calcado'] is not None:
-                produto.numero = kwargs['numero_calcado']
-            if 'material_calcado' in kwargs and kwargs['material_calcado'] is not None:
-                produto.material = kwargs['material_calcado']
-            # Cor já foi tratada acima se for da classe base Produto
+            if numero_calcado is not None:
+                produto.numero = numero_calcado
+            if material_calcado is not None:
+                produto.material = material_calcado
 
         elif isinstance(produto, Equipamentos):
-            if 'tipo_equipamento' in kwargs and kwargs['tipo_equipamento'] is not None:
-                produto.tipo = kwargs['tipo_equipamento']
-            if 'marca_equipamento' in kwargs and kwargs['marca_equipamento'] is not None:
-                produto.marca = kwargs['marca_equipamento']
+            if tipo_equipamento is not None:
+                produto.tipo_equipamento = tipo_equipamento
+            if marca_equipamento is not None:
+                produto.marca = marca_equipamento
 
         elif isinstance(produto, Suplementos):
-            if 'peso_suplemento' in kwargs and kwargs['peso_suplemento'] is not None:
-                produto.peso = kwargs['peso_suplemento']
-            if 'sabor_suplemento' in kwargs and kwargs['sabor_suplemento'] is not None:
-                produto.sabor = kwargs['sabor_suplemento']
-            if 'tipo_suplemento' in kwargs and kwargs['tipo_suplemento'] is not None:
-                produto.tipo_suplemento = kwargs['tipo_suplemento']
+            if peso_suplemento is not None:
+                produto.peso = peso_suplemento
+            if sabor_suplemento is not None:
+                produto.sabor = sabor_suplemento
+            if tipo_suplemento is not None:
+                produto.tipo_suplemento = tipo_suplemento
 
         elif isinstance(produto, Outros):
-            if 'detalhes_outros' in kwargs and kwargs['detalhes_outros'] is not None:
-                produto.detalhes = kwargs['detalhes_outros']
+            if detalhes_outros is not None:
+                produto.detalhes = detalhes_outros
 
         db.session.commit()
         return True
-    
     @staticmethod
     def excluir_produto(produto_id):
         produto = Produto.query.get(produto_id)

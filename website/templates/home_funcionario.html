@@ -15,27 +15,26 @@
 
             {# CEO (nível == 4) #}
             {% if current_user.nivel == 4 %}
-                <a class="nav-item nav-link" href="{{ url_for('view_product.criar_produto') }}">Criar Produto</a>
-                <a class="nav-item nav-link" href="{{ url_for('view_product.gerenciar_estoque') }}">Gerenciar Estoque</a>
-                <a class="nav-item nav-link" href="{{ url_for('view_product.gerenciar_produtos') }}">Gerenciar Produtos</a>
-                <a class="nav-item nav-link" href="{{ url_for('view_product.visualizar_estoque') }}">Ver Estoque Completo</a>
-                <a class="nav-item nav-link" href="{{ url_for('view.gerenciar_funcionarios') }}">Ver Funcionários</a>
-                <a class="nav-item nav-link" href="{{ url_for('view.promover_funcionario_page') }}">Promover Funcionários</a>
-                <a class="nav-item nav-link" href="{{ url_for('view.desligar_funcionario_page') }}">Desligar Funcionários</a>
-                <a class="nav-item nav-link" href="{{ url_for('view.gerenciar_unidades_page') }}">Gerenciar Unidades</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.criar_produto') }}">Criar Produto</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.gerenciar_estoque') }}">Gerenciar Estoque</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.gerenciar_produtos') }}">Gerenciar Produtos</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.visualizar_estoque') }}">Ver Estoque Completo</a>
+                <a class="nav-item nav-link" href="{{ url_for('homeC.gerenciar_funcionarios') }}">Ver Funcionários</a>
+                <a class="nav-item nav-link" href="{{ url_for('homeC.promover_funcionario_page') }}">Promover Funcionários</a>
+                <a class="nav-item nav-link" href="{{ url_for('homeC.gerenciar_unidades_page') }}">Gerenciar Unidades</a>
             {# Gerentes (nível == 3) #}
-            {% elif current_user.nivel == 3 %}
-                <a class="nav-item nav-link" href="{{ url_for('view_product.criar_produto') }}">Criar Produto</a>
-                <a class="nav-item nav-link" href="{{ url_for('view_product.gerenciar_estoque') }}">Gerenciar Estoque</a>
-                <a class="nav-item nav-link" href="{{ url_for('view_product.gerenciar_produtos') }}">Gerenciar Produtos</a>
-                <a class="nav-item nav-link" href="{{ url_for('view_product.visualizar_estoque') }}">Ver Estoque Completo</a>
+            {% elif current_user.nivel == 3 %}  
+                <a class="nav-item nav-link" href="{{ url_for('productC.criar_produto') }}">Criar Produto</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.gerenciar_estoque') }}">Gerenciar Estoque</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.gerenciar_produtos') }}">Gerenciar Produtos</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.visualizar_estoque') }}">Ver Estoque Completo</a>
             {# SubGerentes (nível == 2) #}
             {% elif current_user.nivel == 2 %}
-                <a class="nav-item nav-link" href="{{ url_for('view_product.gerenciar_produtos') }}">Gerenciar Produtos</a>
-                <a class="nav-item nav-link" href="{{ url_for('view_product.visualizar_estoque') }}">Ver Estoque Completo</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.gerenciar_produtos') }}">Gerenciar Produtos</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.visualizar_estoque') }}">Ver Estoque Completo</a>
             {# Staff (nível == 1) #}
             {% elif current_user.nivel == 1 %}
-                <a class="nav-item nav-link" href="{{ url_for('view_product.visualizar_estoque') }}">Ver Estoque Completo</a>
+                <a class="nav-item nav-link" href="{{ url_for('productC.visualizar_estoque') }}">Ver Estoque Completo</a>
                 <a class="nav-item nav-link" href="#">Registrar Venda</a> {# Exemplo de link para Staff #}
             {% endif %} {# Fim do if de nível do funcionário #}
 
@@ -88,11 +87,11 @@
                     </div>
                     <div class="card-body text-center">
                         <p>Como CEO, você tem acesso total às ferramentas e gestão de funcionários e unidades.</p>
-                        <a href="{{ url_for('view_product.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
-                        <a href="{{ url_for('view_product.gerenciar_estoque') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Estoque</a><br>
-                        <a href="{{ url_for('view_product.gerenciar_produtos') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Produtos</a><br>
-                        <a href="{{ url_for('view.gerenciar_funcionarios') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Funcionários</a><br>
-                        <a href="{{ url_for('view.gerenciar_unidades_page') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Unidades</a>
+                        <a href="{{ url_for('productC.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
+                        <a href="{{ url_for('productC.gerenciar_estoque') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Estoque</a><br>
+                        <a href="{{ url_for('productC.gerenciar_produtos') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Produtos</a><br>
+                        <a href="{{ url_for('homeC.gerenciar_funcionarios') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Funcionários</a><br>
+                        <a href="{{ url_for('homeC.gerenciar_unidades_page') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Unidades</a>
                     </div>
                 </div>
                 {# Gerentes (nível == 3) #}
@@ -103,9 +102,9 @@
                     </div>
                     <div class="card-body text-center">
                         <p>Como Gerente, você tem acesso a ferramentas de estoque e produtos.</p>
-                        <a href="{{ url_for('view_product.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
-                        <a href="{{ url_for('view_product.gerenciar_estoque') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Estoque</a><br>
-                        <a href="{{ url_for('view_product.gerenciar_produtos') }}" class="btn btn-primary btn-lg">Gerenciar Produtos</a>
+                        <a href="{{ url_for('productC.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
+                        <a href="{{ url_for('productC.gerenciar_estoque') }}" class="btn btn-primary btn-lg mb-2">Gerenciar Estoque</a><br>
+                        <a href="{{ url_for('productC.gerenciar_produtos') }}" class="btn btn-primary btn-lg">Gerenciar Produtos</a>
                     </div>
                 </div>
                 {# SubGerentes (nível == 2) #}
@@ -116,8 +115,8 @@
                     </div>
                     <div class="card-body text-center">
                         <p>Como SubGerente, você pode ver o estoque e gerenciar produtos.</p>
-                        <a href="{{ url_for('view_product.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
-                        <a href="{{ url_for('view_product.gerenciar_produtos') }}" class="btn btn-primary btn-lg">Gerenciar Produtos</a>
+                        <a href="{{ url_for('productC.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
+                        <a href="{{ url_for('productC.gerenciar_produtos') }}" class="btn btn-primary btn-lg">Gerenciar Produtos</a>
                     </div>
                 </div>
                 {# Staff (nível == 1) #}
@@ -128,8 +127,8 @@
                     </div>
                     <div class="card-body text-center">
                         <p>Acesse o estoque para verificar a disponibilidade dos produtos.</p>
-                        <a href="{{ url_for('view_product.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
-                        <a href="{{ url_for('view_venda.realizar_venda') }}" class="btn btn-success btn-lg">Realizar Venda</a>
+                        <a href="{{ url_for('productC.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
+                        <a href="{{ url_for('vendaC.realizar_venda') }}" class="btn btn-success btn-lg">Realizar Venda</a>
                     </div>
                 </div>
                 {% endif %} {# FIM DO IF DE NÍVEL (CEO, Gerente, SubGerente, Staff) #}

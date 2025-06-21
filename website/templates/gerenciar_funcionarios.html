@@ -12,8 +12,8 @@
     {# Botões de Gerenciamento de Funcionários (apenas para CEO) #}
     {% if current_user.is_authenticated and current_user.nivel == 4 %} {# Apenas CEO #}
     <div class="text-center mb-4">
-        <a href="{{ url_for('view.promover_funcionario_page') }}" class="btn btn-warning btn-lg mr-2">Promover Funcionários</a>
-        <a href="{{ url_for('view.desligar_funcionario_page') }}" class="btn btn-danger btn-lg">Desligar Funcionários</a> {# NOVO BOTÃO #}
+        <a href="{{ url_for('homeC.promover_funcionario_page') }}" class="btn btn-warning btn-lg mr-2">Promover Funcionários</a>
+        <a href="{{ url_for('homeC.desligar_funcionario_page') }}" class="btn btn-danger btn-lg">Desligar Funcionários</a> {# NOVO BOTÃO #}
     </div>
     {% endif %}
 
@@ -61,7 +61,7 @@
     </div>
 
     <div class="text-center mt-4">
-        <a href="{{ url_for('view.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel</a>
+        <a href="{{ url_for('homeC.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel</a>
     </div>
 
 </div>

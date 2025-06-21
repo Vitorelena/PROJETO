@@ -4,23 +4,18 @@ from sqlalchemy.sql import func
 from .Funcionario import Funcionario
 
 class Gerente(Funcionario):
-    __mapper_args__={
-        'polymorphic_identity':6
+    __mapper_args__ = {
+        'polymorphic_identity': 6
     }
-    def __init__(self,*args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.nivel = 3
+
+    def __init__(self, nome, cpf, login, senha, matricula, numero_vendas=0):
+        super().__init__(nome, cpf, login, senha, matricula, nivel=3, numero_vendas=numero_vendas)
+        self.tipo_usuario = 6
 
     def __repr__(self):
-        return f"<Funcionario id={self.id}, nome='{self.nome}', cpf='{self.cpf}', matricula='{self.matricula}', numero de vendas = {self.numero_vendas}>" #testar
+        return f"<Gerente id={self.id}, nome='{self.nome}', cpf='{self.cpf}', matricula='{self.matricula}', numero de vendas = {self.numero_vendas}, nivel {self.nivel}>"
+
     def gerar_relatorio(self):
         relatorio = super().gerar_relatorio()
-        relatorio += f"Cargo: Gerente"
+        relatorio += "\n--- Relatório do Gerente ---\nCargo: Gerente"
         return relatorio
-    def fazer_venda(self):
-        return 
-    def ver_estoque(self):
-        return
-    def editar_estoque(self):
-        return
-    

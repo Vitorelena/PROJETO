@@ -7,10 +7,10 @@ from ..service.UserDatabaseService import UserDatabaseService
 from ..model.Users.User import User # Importe o modelo base User para verificações de existência
 from ..model.Users.Ceo import Ceo   # Certifique-se de que Ceo esteja importado (se necessário aqui, ou só no service)
 
-viewSign = Blueprint('viewSign', __name__)
+signC = Blueprint('signC', __name__)
 
 # --- Rota de Login (apenas um placeholder, complete com sua lógica real) ---
-@viewSign.route('/login_page', methods=['GET', 'POST'])
+@signC.route('/login_page', methods=['GET', 'POST'])
 def login_page():
     if request.method == 'POST':
         login = request.form.get('login')
@@ -25,26 +25,26 @@ def login_page():
             flash('Login realizado com sucesso!', 'success')
             # Redireciona para a home específica após o login
             if user.tipo_usuario == 2:
-                return redirect(url_for('view.home_cliente'))
+                return redirect(url_for('homeC.home_cliente'))
             elif user.tipo_usuario >= 3: # Assumindo que 3+ são funcionários
-                return redirect(url_for('view.home_funcionario'))
+                return redirect(url_for('homeC.home_funcionario'))
             else:
-                return redirect(url_for('view.home')) # Home padrão
+                return redirect(url_for('homeC.home')) # Home padrão
         else:
             flash('Login ou senha inválidos.', 'danger')
 
     return render_template('login.html') # Você deve ter um template 'login.html'
 
 # --- Rota de Logout ---
-@viewSign.route('/logout')
+@signC.route('/logout')
 @login_required # Garante que apenas usuários logados possam deslogar
 def logout():
     logout_user()
     flash('Você foi desconectado(a).', 'info')
-    return redirect(url_for('view.home')) # Redireciona para a home padrão
+    return redirect(url_for('homeC.home')) # Redireciona para a home padrão
 
 # --- Rota de Cadastro Geral (Cliente, Funcionário) ---
-@viewSign.route('/sign-up', methods=['GET','POST'])
+@signC.route('/sign-up', methods=['GET','POST'])
 def sign_up():
     if request.method == 'POST':
         nome = request.form.get('nome')
@@ -87,7 +87,7 @@ def sign_up():
             if novo_usuario_cadastrado:
                 flash(f"Cliente '{nome}' cadastrado com sucesso!", 'success')
                 login_user(novo_usuario_cadastrado, remember=True) # Loga o cliente automaticamente
-                return redirect(url_for('view.home_cliente')) # Redireciona para home do cliente
+                return redirect(url_for('homeC.home_cliente')) # Redireciona para home do cliente
             else:
                 flash("Erro ao cadastrar o cliente. Verifique os dados e tente novamente.", 'danger')
         
@@ -120,7 +120,7 @@ def sign_up():
             if novo_usuario_cadastrado:
                 flash(f"Funcionário '{nome}' (Nível {nivel_funcionario}) cadastrado com sucesso!", 'success')
                 login_user(novo_usuario_cadastrado, remember=True) # Loga o funcionário automaticamente
-                return redirect(url_for('view.home_funcionario')) # Redireciona para home do funcionário
+                return redirect(url_for('homeC.home_funcionario')) # Redireciona para home do funcionário
             else:
                 flash("Erro ao cadastrar o funcionário. Verifique a matrícula ou outros dados.", 'danger')
         else: # Tipo de usuário (2 ou 3) inválido.
@@ -133,7 +133,7 @@ def sign_up():
     return render_template("sign_up.html")
 
 # --- Rota de Cadastro de CEO (exclusiva) ---
-@viewSign.route('/sign_up_ceo', methods=['GET', 'POST'])
+@signC.route('/sign_up_ceo', methods=['GET', 'POST'])
 def sign_up_ceo():
     # CUIDADO: Em uma aplicação real e segura, você só permitiria criar um CEO
     # se não houver CEOs existentes, ou se a requisição viesse de um super-administrador já logado.
@@ -172,7 +172,7 @@ def sign_up_ceo():
             if novo_ceo:
                 flash('Conta de CEO criada com sucesso! Você foi logado(a) automaticamente.', 'success')
                 login_user(novo_ceo, remember=True) # Loga o CEO automaticamente
-                return redirect(url_for('view.home_funcionario')) # CEO geralmente vai para painel de funcionario/admin
+                return redirect(url_for('homeC.home_funcionario')) # CEO geralmente vai para painel de funcionario/admin
             else:
                 flash('Não foi possível criar a conta de CEO. Tente novamente.', 'danger')
                 return render_template('sign_up_ceo.html')

@@ -4,12 +4,12 @@ from ..model.Users.User import User
 from werkzeug.security import check_password_hash
 from .. import db
 
-viewLogin = Blueprint('viewLogin', __name__)
+loginC = Blueprint('loginC', __name__)
 
-@viewLogin.route('/login', methods=['GET','POST'])
+@loginC.route('/login', methods=['GET','POST'])
 def login_page():
     if current_user.is_authenticated:
-        return(redirect(url_for('view.home')))
+        return(redirect(url_for('homeC.home')))
     if request.method == 'POST':
         data = request.form
         login = data.get('login')
@@ -25,9 +25,9 @@ def login_page():
         if user and check_password_hash(user.senha, senha):
             login_user(user, remember=remember)
             if user.tipo_usuario == 2:
-                return redirect(url_for('view.home_cliente'))
+                return redirect(url_for('homeC.home_cliente'))
             elif user.tipo_usuario >= 3:
-                return redirect(url_for('view.home_funcionario'))
+                return redirect(url_for('homeC.home_funcionario'))
             else:
                 print("Usuario invalido")
         else:
@@ -35,7 +35,7 @@ def login_page():
             return render_template("login.html")
                     
     return render_template("login.html")
-@viewLogin.route('/logout')
+@loginC.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('view.home'))
+    return redirect(url_for('homeC.home'))

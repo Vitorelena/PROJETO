@@ -63,7 +63,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        <form method="POST" action="{{ url_for('view_product.gerenciar_estoque') }}" class="form-inline d-flex flex-column align-items-start">
+                        <form method="POST" action="{{ url_for('productC.gerenciar_estoque') }}" class="form-inline d-flex flex-column align-items-start">
                             <input type="hidden" name="produto_id" value="{{ produto.id }}">
                             
                             <div class="form-group mb-2 d-flex">
@@ -86,7 +86,7 @@
     </div>
 
     <div class="text-center mt-4">
-        <a href="{{ url_for('view.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel</a>
+        <a href="{{ url_for('homeC.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel</a>
     </div>
 
 </div>

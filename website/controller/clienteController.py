@@ -5,9 +5,9 @@ from ..service.VendaDatabaseService import VendaDatabaseService
 from ..service.ProdutoDatabaseService import ProdutoDatabaseService
 from flask_login import current_user, login_required
 
-viewcliente = Blueprint('viewcliente', __name__)
+clienteC = Blueprint('clienteC', __name__)
 
-@viewcliente.route('/cliente/editar/<int:usuario_id>', methods=['GET', 'POST'])
+@clienteC.route('/cliente/editar/<int:usuario_id>', methods=['GET', 'POST'])
 def editar_cliente(usuario_id):
     cliente = Cliente.query.get(usuario_id)
     if not cliente or cliente.tipo_usuario != 2:
@@ -44,7 +44,7 @@ def editar_cliente(usuario_id):
 
     return render_template('editar_cliente.html', cliente=cliente)
 
-@viewcliente.route('/cliente/historico_compras')
+@clienteC.route('/cliente/historico_compras')
 def historico_compras():
     cliente_id = current_user.id
     vendas = VendaDatabaseService.buscar_historico_compras(cliente_id)
@@ -64,7 +64,7 @@ def historico_compras():
 
     return render_template("historico_compras.html", historico=historico)
 
-@viewcliente.route('/cliente/historico_pedidos')
+@clienteC.route('/cliente/historico_pedidos')
 @login_required
 def lista_pedidos():
     cliente_id = current_user.id

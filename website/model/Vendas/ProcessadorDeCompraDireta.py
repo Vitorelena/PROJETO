@@ -14,7 +14,7 @@ class ProcessadorDeCompraDireta(ProcessadorDeCompra):
             estoque = EstoqueDatabaseService.get_estoque_por_produto_id(produto_id)
             if not estoque or estoque.quantidade < quantidade:
                 return False
-        return False
+        return True 
     
     def atualizar_estoque(self, carrinho: CarrinhoDeCompras) -> bool:
         for produto_id, quantidade in carrinho.obter_itens().items():
@@ -23,9 +23,9 @@ class ProcessadorDeCompraDireta(ProcessadorDeCompra):
                 print(f"Erro ao subtrair estoque do produto {produto_id}: {mensagem}")
                 return False
         return True
+
     def registrar_venda(self, carrinho: CarrinhoDeCompras, usuario=None, funcionario=None):
         venda = Venda(
-            data_venda=datetime.utcnow(),
             cliente_id=usuario.id if usuario else None,
             funcionario_id=funcionario.id if funcionario else None
         )

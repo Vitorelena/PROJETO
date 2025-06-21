@@ -22,7 +22,7 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Editar Produto #{{ produto.id }}</h2>
-    <form method="POST" action="{{ url_for('view_product.editar_produto', produto_id=produto.id) }}">
+    <form method="POST" action="{{ url_for('productC.editar_produto', produto_id=produto.id) }}">
         {# Campos comuns a todos os produtos #}
         <div class="form-group">
             <label for="nome">Nome:</label>
@@ -129,7 +129,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-        <a href="{{ url_for('view_product.gerenciar_produtos') }}" class="btn btn-secondary ml-2">Cancelar</a>
+        <a href="{{ url_for('productC.gerenciar_produtos') }}" class="btn btn-secondary ml-2">Cancelar</a>
     </form>
 </div>
 

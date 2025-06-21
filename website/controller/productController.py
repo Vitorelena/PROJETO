@@ -10,26 +10,39 @@ from ..model.Produtos.Equipamentos import Equipamentos
 from ..model.Produtos.Outros import Outros
 from flask_login import current_user, login_required
 
-view_product = Blueprint('view_product', __name__)
-@view_product.route('/criar_produto', methods=['GET', 'POST'])
+productC = Blueprint('productC', __name__)
+
+@productC.route('/criar_produto', methods=['GET', 'POST'])
 @login_required
 def criar_produto():
-    # Removido 'novo_produto = None' aqui, o serviço vai retornar o objeto.
-    print(f"Método da requisição: {request.method}")
     if request.method == 'POST':
-        # Coleta todos os dados comuns
         nome = request.form.get('nome')
         descricao = request.form.get('descricao')
-        preco = request.form.get('preco')
+        preco = float(request.form.get('preco'))
         codigo_de_barras = request.form.get('codigo_de_barras')
         imagem_url = request.form.get('imagem_url')
         categoria_id = request.form.get('categoria')
 
-        # Coleta todos os dados específicos (passaremos como kwargs)
+        categoria_para_tipo = {
+            "1": "vestuario_feminino",
+            "2": "vestuario_masculino",
+            "3": "calcados",
+            "4": "equipamentos",
+            "5": "suplementos",
+            "6": "outros"
+        }
+
+        tipo = categoria_para_tipo.get(str(categoria_id))
+        if not tipo:
+            flash("Categoria inválida.", "danger")
+            return render_template('criar_produto.html')
+
         specific_attrs = {
-            'tamanho_vestuario': request.form.get('tamanho_vestuario'),
-            'cor_vestuario': request.form.get('cor_vestuario'), # Cuidado se 'cor' está na base ou aqui
-            'tecido_vestuario': request.form.get('tecido_vestuario'),
+            'tamanho_feminino': request.form.get('tamanho_feminino'),
+            'cor_vestuario': request.form.get('cor_vestuario'),
+            'tecido_feminino': request.form.get('tecido_feminino'),
+            'tamanho_masculino': request.form.get('tamanho_masculino'),
+            'tecido_masculino': request.form.get('tecido_masculino'),
             'numero_calcado': request.form.get('numero_calcado'),
             'cor_calcado': request.form.get('cor_calcado'),
             'material_calcado': request.form.get('material_calcado'),
@@ -37,40 +50,104 @@ def criar_produto():
             'marca_equipamento': request.form.get('marca_equipamento'),
             'peso_suplemento': request.form.get('peso_suplemento'),
             'sabor_suplemento': request.form.get('sabor_suplemento'),
-            'tipo_suplemento': request.form.get('tipo_suplemento'), # Cuidado: nome de campo igual ao tipo de Equipamento
+            'tipo_suplemento': request.form.get('tipo_suplemento'),
             'detalhes_outros': request.form.get('detalhes_outros')
         }
-        # Filtra valores None ou vazios para não passar para construtores se não existirem
-        specific_attrs = {k: v for k, v in specific_attrs.items() if v is not None and v != ''}
+        specific_attrs = {k: v for k, v in specific_attrs.items() if v not in (None, '')}
 
         try:
-            # Chama o serviço para criar o produto polimórfico
             novo_produto = ProdutoDatabaseService.criar_produto(
                 nome=nome,
                 descricao=descricao,
                 preco=preco,
                 codigo_de_barras=codigo_de_barras,
                 imagem_url=imagem_url,
-                categoria_id=categoria_id,
-                **specific_attrs # Passa os atributos específicos como kwargs
+                tipo=tipo,  # removeu categoria daqui
+                **specific_attrs
             )
-
-            if novo_produto:
-                flash("Produto criado com sucesso!", 'success')
-                return redirect(url_for('view_product.criar_estoque', produto_id=novo_produto.id))
-            else:
-                flash("Erro ao criar o produto. Verifique os dados.", 'danger')
-                return render_template('criar_produto.html') # Retorna para o formulário
+            flash("Produto criado com sucesso!", "success")
+            return redirect(url_for('productC.criar_estoque', produto_id=novo_produto.id))
         except Exception as e:
-            flash(f"Ocorreu um erro: {e}", 'danger')
+            flash(f"Ocorreu um erro ao criar produto: {e}", "danger")
             print(f"Erro ao criar produto: {e}")
             return render_template('criar_produto.html')
 
-    else:
-        print("Método não é POST")
-        return render_template('criar_produto.html')
+    return render_template('criar_produto.html')
 
-@view_product.route('/criar_estoque/<int:produto_id>', methods=['GET', 'POST'])
+
+@productC.route('/editar_produto/<int:produto_id>', methods=['GET', 'POST'])
+@login_required
+def editar_produto(produto_id):
+    if not (current_user.is_authenticated and current_user.nivel >= 2):
+        flash("Você não tem permissão para editar produtos.", 'danger')
+        return redirect(url_for('homeC.home'))
+
+    produto = ProdutoDatabaseService.get_produto_por_id(produto_id)
+    if not produto:
+        flash("Produto não encontrado.", 'danger')
+        return redirect(url_for('productC.gerenciar_produtos'))
+
+    if request.method == 'POST':
+        # Campos comuns para todos os produtos
+        common_attrs = {
+            'nome': request.form.get('nome'),
+            'descricao': request.form.get('descricao'),
+            'preco': request.form.get('preco'),
+            'codigo_de_barras': request.form.get('codigo_de_barras'),
+            'imagem_url': request.form.get('imagem_url')
+        }
+
+        # Campos específicos conforme o tipo de produto
+        specific_attrs = {}
+
+        if isinstance(produto, VestuarioFeminino):
+            specific_attrs = {
+                'tamanho_feminino': request.form.get('tamanho_vestuario'),
+                'tecido_feminino': request.form.get('tecido_vestuario'),
+                'cor_vestuario': request.form.get('cor_vestuario')
+            }
+        elif isinstance(produto, VestuarioMasculino):
+            specific_attrs = {
+                'tamanho_masculino': request.form.get('tamanho_masculino'),
+                'tecido_masculino': request.form.get('tecido_masculino'),
+                'cor_vestuario': request.form.get('cor_vestuario')
+            }
+        elif isinstance(produto, Calcados):
+            specific_attrs = {
+                'numero_calcado': request.form.get('numero_calcado'),
+                'material_calcado': request.form.get('material_calcado'),
+                'cor_calcado': request.form.get('cor_calcado')
+            }
+        elif isinstance(produto, Equipamentos):
+            specific_attrs = {
+                'tipo_equipamento': request.form.get('tipo_equipamento'),
+                'marca_equipamento': request.form.get('marca_equipamento')
+            }
+        elif isinstance(produto, Suplementos):
+            specific_attrs = {
+                'peso_suplemento': request.form.get('peso_suplemento'),
+                'sabor_suplemento': request.form.get('sabor_suplemento'),
+                'tipo_suplemento': request.form.get('tipo_suplemento')
+            }
+        elif isinstance(produto, Outros):
+            specific_attrs = {
+                'detalhes_outros': request.form.get('detalhes_outros')
+            }
+
+        # Combina todos os atributos e remove os que estão vazios
+        all_attrs = {**common_attrs, **specific_attrs}
+        all_attrs = {k: v for k, v in all_attrs.items() if v not in (None, '')}
+
+        success = ProdutoDatabaseService.atualizar_produto(produto_id=produto.id, **all_attrs)
+
+        if success:
+            flash(f"Produto '{produto.nome}' atualizado com sucesso!", 'success')
+            return redirect(url_for('productC.gerenciar_produtos'))
+        else:
+            flash("Erro ao atualizar o produto.", 'danger')
+
+    return render_template('editar_produto.html', produto=produto)
+@productC.route('/criar_estoque/<int:produto_id>', methods=['GET', 'POST'])
 def criar_estoque(produto_id):
     produto = ProdutoDatabaseService.get_produto_por_id(produto_id)
     if not produto:
@@ -87,13 +164,13 @@ def criar_estoque(produto_id):
         )
 
         if estoque_criado is True:
-            return redirect(url_for('view.home'))
+            return redirect(url_for('homeC.home'))
         else:
             # Trate o erro na criação do estoque (estoque já existe ou outro erro)
             pass
 
     return render_template('criar_estoque.html', produto_id=produto_id)
-@view_product.route('/visualizar_estoque', methods=['GET'])
+@productC.route('/visualizar_estoque', methods=['GET'])
 @login_required # Garante que apenas usuários logados possam acessar
 def visualizar_estoque():
     show_valor_total = False # Flag para controlar a visibilidade do valor total (default é False)
@@ -111,19 +188,19 @@ def visualizar_estoque():
             # Caso de funcionário com tipo >=3 mas sem nível ou nível inválido (não deveria acontecer)
             else:
                 flash("Você não tem permissão para visualizar o estoque.", 'danger')
-                return redirect(url_for('view.home'))
+                return redirect(url_for('homeC.home'))
         # Cliente (tipo_usuario == 2) - pode ver estoque, mas SEM valores totais
         elif current_user.tipo_usuario == 2:
             show_valor_total = False
         # Outros tipos de usuário não previstos ou sem permissão (barra acesso)
         else:
             flash("Você não tem permissão para visualizar o estoque.", 'danger')
-            return redirect(url_for('view.home'))
+            return redirect(url_for('homeC.home'))
     else:
         # Este 'else' é tecnicamente redundante devido ao '@login_required',
         # mas serve como um fallback claro em caso de desautenticação inesperada.
         flash("Você precisa estar logado para visualizar o estoque.", 'danger')
-        return redirect(url_for('viewLogin.login_page'))
+        return redirect(url_for('loginC.login_page'))
 
     # Coleta os dados do estoque após as verificações de permissão
     itens_estoque = EstoqueDatabaseService.get_todos_itens_estoque()
@@ -136,13 +213,13 @@ def visualizar_estoque():
         valor_total_geral=valor_total_geral,
         show_valor_total=show_valor_total # AGORA A VARIÁVEL ESTÁ SENDO PASSADA CORRETAMENTE!
     )
-@view_product.route('/gerenciar_estoque', methods=['GET', 'POST'])
+@productC.route('/gerenciar_estoque', methods=['GET', 'POST'])
 @login_required
 def gerenciar_estoque():
     # Verificação de nível de acesso
     if not (current_user.is_authenticated and current_user.nivel >= 3):
         flash("Você não tem permissão para gerenciar o estoque.", 'danger')
-        return redirect(url_for('view.home')) # Redireciona para a home se não tiver permissão
+        return redirect(url_for('homeC.home')) # Redireciona para a home se não tiver permissão
 
     todos_produtos = ProdutoDatabaseService.get_todos_produtos()
     
@@ -158,7 +235,7 @@ def gerenciar_estoque():
             quantidade = int(quantidade)
         except (ValueError, TypeError):
             flash("ID do produto ou quantidade inválidos.", 'danger')
-            return redirect(url_for('view_product.gerenciar_estoque'))
+            return redirect(url_for('productC.gerenciar_estoque'))
 
         if action == 'adicionar_quantidade':
             success, message, new_quantity = EstoqueDatabaseService.adicionar_ao_estoque(produto_id, quantidade)
@@ -180,19 +257,19 @@ def gerenciar_estoque():
                 flash(f"Erro ao excluir estoque.", 'danger')
         # Adicione outras ações de gerenciamento aqui (editar, etc.)
 
-        return redirect(url_for('view_product.gerenciar_estoque')) # Redireciona para atualizar a lista
+        return redirect(url_for('productC.gerenciar_estoque')) # Redireciona para atualizar a lista
 
     return render_template(
         'gerenciar_estoque.html',
         todos_produtos=todos_produtos # Passa todos os produtos para a tabela de gerenciamento
     )
-@view_product.route('/gerenciar_produtos', methods=['GET', 'POST'])
+@productC.route('/gerenciar_produtos', methods=['GET', 'POST'])
 @login_required
 def gerenciar_produtos():
     # Verificação de nível de acesso (o mesmo do estoque, Gerente ou superior)
     if not (current_user.is_authenticated and current_user.nivel >= 2):
         flash("Você não tem permissão para gerenciar produtos.", 'danger')
-        return redirect(url_for('view.home'))
+        return redirect(url_for('homeC.home'))
 
     # Para GET: Exibe a lista de produtos
     if request.method == 'GET':
@@ -208,7 +285,7 @@ def gerenciar_produtos():
             produto_id = int(produto_id)
         except (ValueError, TypeError):
             flash("ID do produto inválido.", 'danger')
-            return redirect(url_for('view_product.gerenciar_produtos'))
+            return redirect(url_for('productC.gerenciar_produtos'))
 
         if action == 'excluir_produto':
             success = ProdutoDatabaseService.excluir_produto(produto_id)
@@ -218,58 +295,5 @@ def gerenciar_produtos():
                 flash(f"Erro ao excluir produto ID {produto_id}.", 'danger')
         # Adicione aqui outras ações POST como 'ativar/desativar', etc.
 
-        return redirect(url_for('view_product.gerenciar_produtos')) # Redireciona para atualizar a lista
-
-@view_product.route('/editar_produto/<int:produto_id>', methods=['GET', 'POST'])
-@login_required
-def editar_produto(produto_id):
-    # Verificação de nível de acesso (o mesmo do estoque, Gerente ou superior)
-    if not (current_user.is_authenticated and current_user.nivel >= 2):
-        flash("Você não tem permissão para editar produtos.", 'danger')
-        return redirect(url_for('view.home'))
-
-    produto = ProdutoDatabaseService.get_produto_por_id(produto_id)
-    if not produto:
-        flash("Produto não encontrado.", 'danger')
-        return redirect(url_for('view_product.gerenciar_produtos'))
-
-    if request.method == 'POST':
-        # Coleta todos os dados comuns
-        common_attrs = {
-            'nome': request.form.get('nome'),
-            'descricao': request.form.get('descricao'),
-            'preco': request.form.get('preco'),
-            'codigo_de_barras': request.form.get('codigo_de_barras'),
-            'imagem_url': request.form.get('imagem_url'),
-            'categoria': request.form.get('categoria')
-        }
-
-        # Coleta todos os dados específicos (passaremos como kwargs)
-        specific_attrs = {
-            'tamanho_vestuario': request.form.get('tamanho_vestuario'),
-            'cor_vestuario': request.form.get('cor_vestuario'),
-            'tecido_vestuario': request.form.get('tecido_vestuario'),
-            'numero_calcado': request.form.get('numero_calcado'),
-            'cor_calcado': request.form.get('cor_calcado'),
-            'material_calcado': request.form.get('material_calcado'),
-            'tipo_equipamento': request.form.get('tipo_equipamento'),
-            'marca_equipamento': request.form.get('marca_equipamento'),
-            'peso_suplemento': request.form.get('peso_suplemento'),
-            'sabor_suplemento': request.form.get('sabor_suplemento'),
-            'tipo_suplemento': request.form.get('tipo_suplemento'),
-            'detalhes_outros': request.form.get('detalhes_outros')
-        }
-        # Filtra valores None ou vazios para não passá-los se não tiverem sido alterados
-        all_attrs = {**common_attrs, **specific_attrs}
-        all_attrs = {k: v for k, v in all_attrs.items() if v is not None} # Removido v != '' aqui para permitir campos vazios
-
-        success = ProdutoDatabaseService.atualizar_produto(produto_id=produto.id, **all_attrs)
-        
-        if success:
-            flash(f"Produto '{produto.nome}' atualizado com sucesso!", 'success')
-            return redirect(url_for('view_product.gerenciar_produtos'))
-        else:
-            flash("Erro ao atualizar o produto.", 'danger')
-
-    # Para GET: Exibe o formulário de edição pré-preenchido
-    return render_template('editar_produto.html', produto=produto)
+        return redirect(url_for('productC.gerenciar_produtos')) # Redireciona para atualizar a lista
+ 

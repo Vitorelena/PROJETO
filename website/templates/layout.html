@@ -319,7 +319,7 @@
 <body>
     <div class="sidebar">
         <div class="navbar-nav">
-            <a class="navbar-brand" href="{{ url_for('view.home') }}">
+            <a class="navbar-brand" href="{{ url_for('homeC.home') }}">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Nossa Logo" height="30">
                 <span style="font-size: 1.2em;">Untouched</span>
             </a>
@@ -329,17 +329,17 @@
                 {# Este bloco será preenchido pelos templates filhos #}
                 {# Exemplo de links que aparecem para todos que estendem o layout, se não forem sobrescritos #}
                 {% if current_user.is_authenticated and current_user.tipo_usuario >= 5 %}
-                    <a class="nav-item nav-link" href="{{ url_for('view_product.criar_produto') }}">Criar Produto</a>
+                    <a class="nav-item nav-link" href="{{ url_for('productC.criar_produto') }}">Criar Produto</a>
                 {% endif %}
                 {% if current_user.is_authenticated%}
                     {%if current_user.tipo_usuario > 2%}
-                        <a class="nav-item nav-link" href="{{ url_for('view.home_funcionario') }}">Minha Conta</a>  
+                        <a class="nav-item nav-link" href="{{ url_for('homeC.home_funcionario') }}">Minha Conta</a>  
                     {%else%}
-                        <a class="nav-item nav-link" href="{{ url_for('view.home_cliente') }}">Minha Conta</a>  
+                        <a class="nav-item nav-link" href="{{ url_for('homeC.home_cliente') }}">Minha Conta</a>  
                     {%endif%}
                 {%else%}
-                    <a class="nav-item nav-link" href="{{ url_for('viewLogin.login_page') }}">Login</a>
-                    <a class="nav-item nav-link" href="{{ url_for('viewSign.sign_up') }}">Sign Up</a>
+                    <a class="nav-item nav-link" href="{{ url_for('loginC.login_page') }}">Login</a>
+                    <a class="nav-item nav-link" href="{{ url_for('signC.sign_up') }}">Sign Up</a>
                 {% endif %}
                 
             {% endblock %}
@@ -352,18 +352,18 @@
                 {# CARRINHO DE COMPRAS #}
                 {% if current_user.is_authenticated %}
                 {%if current_user.is_authenticated and current_user.tipo_usuario == 2%}
-                    <a class="cart-link" href="{{ url_for('view_venda.carrinho') }}">
+                    <a class="cart-link" href="{{ url_for('vendaC.carrinho') }}">
                         <i class="fa fa-shopping-cart"></i> Carrinho
                     </a>
                 {%endif%}
                 {% if current_user.is_authenticated and current_user.tipo_usuario > 3 %}
-                    <a class="cart-link" href="{{ url_for('view_venda.carrinho_venda') }}">
+                    <a class="cart-link" href="{{ url_for('vendaC.carrinho_venda') }}">
                         <i class="fa fa-money"></i> Realizar Venda
                     </a>
                 {% endif %}
                 {%endif%}
                 {# HOME LINK #}
-                <a class="home-link" href="{{ url_for('view.home') }}">
+                <a class="home-link" href="{{ url_for('homeC.home') }}">
                     <i class="fa fa-home"></i> Home
                 </a>
             </div>
@@ -372,13 +372,13 @@
                 {# INFORMAÇÕES DE AUTENTICAÇÃO #}
                 {% if current_user.is_authenticated %}
                     
-                    <a class="auth-link" href="{{ url_for('viewLogin.logout') }}">Logout</a>
+                    <a class="auth-link" href="{{ url_for('loginC.logout') }}">Logout</a>
                     <span class="welcome-message">Olá, {{ current_user.nome }}</span>
                     {# Link "Minha Conta" para usuário logado #}
                    
                 {% else %}
-                    <a class="auth-link" href="{{ url_for('viewLogin.login_page') }}">Login</a>
-                    <a class="auth-link" href="{{ url_for('viewSign.sign_up') }}">Sign Up</a>
+                    <a class="auth-link" href="{{ url_for('loginC.login_page') }}">Login</a>
+                    <a class="auth-link" href="{{ url_for('signC.sign_up') }}">Sign Up</a>
                 {% endif %}
             </div>
         </div>

@@ -84,14 +84,14 @@
     {# Link de retorno inteligente baseado no tipo de usuário #}
      {% if current_user.is_authenticated %}
          {% if current_user.tipo_usuario >= 3 %} {# Funcionários #}
-            <a href="{{ url_for('view.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel do Funcionário</a>
+            <a href="{{ url_for('homeC.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel do Funcionário</a>
          {% elif current_user.tipo_usuario == 2 %} {# Clientes #}
-            <a href="{{ url_for('view.home_cliente') }}" class="btn btn-secondary">Voltar ao Painel do Cliente</a>
+            <a href="{{ url_for('homeC.home_cliente') }}" class="btn btn-secondary">Voltar ao Painel do Cliente</a>
      {% else %} {# Outros casos #}
-         <a href="{{ url_for('view.home') }}" class="btn btn-secondary">Voltar à Home</a>
+         <a href="{{ url_for('homeC.home') }}" class="btn btn-secondary">Voltar à Home</a>
     {% endif %}
      {% else %} {# Caso nunca deveria acontecer por @login_required, mas por segurança #}
-         <a href="{{ url_for('view.home') }}" class="btn btn-secondary">Voltar à Home</a>
+         <a href="{{ url_for('homeC.home') }}" class="btn btn-secondary">Voltar à Home</a>
     {% endif %}
      <button onclick="window.print()" class="btn btn-dark">Imprimir Estoque</button>
      </div>

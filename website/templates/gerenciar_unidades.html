@@ -24,7 +24,7 @@
     <h2 class="mb-4 text-center">Gerenciar Unidades (Lojas)</h2>
 
     <div class="text-center mb-4">
-        <a href="{{ url_for('view.sign_up_loja') }}" class="btn btn-success btn-lg">Adicionar Nova Unidade</a>
+        <a href="{{ url_for('homeC.sign_up_loja') }}" class="btn btn-success btn-lg">Adicionar Nova Unidade</a>
     </div>
 
     <div class="table-responsive">
@@ -51,7 +51,7 @@
                     <td>{{ loja.longitude }}</td>
                     <td>
                         {# Botão de Excluir Unidade #}
-                        <form method="POST" action="{{ url_for('view.gerenciar_unidades_page') }}" onsubmit="return confirm('Tem certeza que deseja excluir a unidade {{ loja.nome }}?');">
+                        <form method="POST" action="{{ url_for('homeC.gerenciar_unidades_page') }}" onsubmit="return confirm('Tem certeza que deseja excluir a unidade {{ loja.nome }}?');">
                             <input type="hidden" name="action" value="excluir_unidade">
                             <input type="hidden" name="loja_id" value="{{ loja.id }}">
                             <button type="submit" class="btn btn-sm btn-danger">Excluir Unidade</button>
@@ -68,7 +68,7 @@
     </div>
 
     <div class="text-center mt-4">
-        <a href="{{ url_for('view.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel</a>
+        <a href="{{ url_for('homeC.home_funcionario') }}" class="btn btn-secondary">Voltar ao Painel</a>
     </div>
 
 </div>
