@@ -1,4 +1,4 @@
-from flask import Blueprint,render_template, request, redirect, url_for, flash
+from flask import Blueprint,render_template, request, redirect, url_for
 import folium
 from .. import db
 from ..model.Loja import Loja
@@ -85,7 +85,7 @@ def home_funcionario():
 def gerenciar_funcionarios():
     # Apenas o CEO (nível 4) pode acessar esta página
     if not (current_user.is_authenticated and current_user.nivel == 4):
-        flash("Você não tem permissão para visualizar a lista de funcionários.", 'danger')
+        print("Você não tem permissão para visualizar a lista de funcionários.", 'danger')
         return redirect(url_for('homeC.home_funcionario')) # Redireciona para o painel de funcionario
 
     funcionarios = UserDatabaseService.listar_funcionarios() # Obtenha todos os funcionários
@@ -97,7 +97,7 @@ def gerenciar_funcionarios():
 def promover_funcionario_page():
     # Apenas o CEO (nível 4) pode acessar esta página
     if not (current_user.is_authenticated and current_user.nivel == 4):
-        flash("Você não tem permissão para gerenciar promoções de funcionários.", 'danger')
+        print("Você não tem permissão para gerenciar promoções de funcionários.", 'danger')
         return redirect(url_for('homeC.home_funcionario'))
 
     # Lista funcionários elegíveis para promoção (excluindo CEO)
@@ -110,14 +110,14 @@ def promover_funcionario_page():
 def promover_funcionario_action(funcionario_id):
     # Apenas o CEO (nível 4) pode realizar esta ação
     if not (current_user.is_authenticated and current_user.nivel == 4):
-        flash("Você não tem permissão para realizar promoções de funcionários.", 'danger')
+        print("Você não tem permissão para realizar promoções de funcionários.", 'danger')
         return redirect(url_for('homeC.home_funcionario'))
     
     success, message = UserDatabaseService.promover_funcionario(funcionario_id)
     if success:
-        flash(message, 'success')
+        print(message, 'success')
     else:
-        flash(message, 'danger')
+        print(message, 'danger')
     
     return redirect(url_for('homeC.promover_funcionario_page'))
 @homeC.route('/desligar_funcionario_page', methods=['GET'])
@@ -125,7 +125,7 @@ def promover_funcionario_action(funcionario_id):
 def desligar_funcionario_page():
     # Apenas o CEO (nível 4) pode acessar esta página
     if not (current_user.is_authenticated and current_user.nivel == 4):
-        flash("Você não tem permissão para desligar funcionários.", 'danger')
+        print("Você não tem permissão para desligar funcionários.", 'danger')
         return redirect(url_for('homeC.home_funcionario'))
 
     # Lista todos os funcionários exceto o próprio CEO (CEO não pode desligar a si mesmo)
@@ -139,26 +139,26 @@ def desligar_funcionario_page():
 def desligar_funcionario_action(funcionario_id):
     # Apenas o CEO (nível 4) pode realizar esta ação
     if not (current_user.is_authenticated and current_user.nivel == 4):
-        flash("Você não tem permissão para realizar esta ação.", 'danger')
+        print("Você não tem permissão para realizar esta ação.", 'danger')
         return redirect(url_for('homeC.home_funcionario'))
     
     # Converte o ID para inteiro
     try:
         funcionario_id = int(funcionario_id)
     except (ValueError, TypeError):
-        flash("ID de funcionário inválido.", 'danger')
+        print("ID de funcionário inválido.", 'danger')
         return redirect(url_for('homeC.desligar_funcionario_page'))
 
     # O CEO não pode desligar a si mesmo
     if funcionario_id == current_user.id:
-        flash("Você não pode desligar sua própria conta de CEO.", 'danger')
+        print("Você não pode desligar sua própria conta de CEO.", 'danger')
         return redirect(url_for('homeC.desligar_funcionario_page'))
 
     success, message = UserDatabaseService.deletar_usuario_funcionario(funcionario_id)
     if success:
-        flash(message, 'success')
+        print(message, 'success')
     else:
-        flash(message, 'danger')
+        print(message, 'danger')
     
     # Redireciona de volta para a página de listagem de desligamento
     return redirect(url_for('homeC.desligar_funcionario_page'))
@@ -168,7 +168,7 @@ def desligar_funcionario_action(funcionario_id):
 def gerenciar_unidades_page():
     # Apenas o CEO (nível 4) pode acessar esta página
     if not (current_user.is_authenticated and current_user.nivel == 4):
-        flash("Você não tem permissão para gerenciar unidades.", 'danger')
+        print("Você não tem permissão para gerenciar unidades.", 'danger')
         return redirect(url_for('homeC.home_funcionario'))
 
     # Para GET: Exibe a lista de unidades
@@ -184,15 +184,15 @@ def gerenciar_unidades_page():
         try:
             loja_id = int(loja_id)
         except (ValueError, TypeError):
-            flash("ID da loja inválido.", 'danger')
+            print("ID da loja inválido.", 'danger')
             return redirect(url_for('homeC.gerenciar_unidades_page'))
 
         if action == 'excluir_unidade':
             success = LojaDatabaseService.excluir_loja(loja_id)
             if success:
-                flash(f"Unidade ID {loja_id} excluída com sucesso.", 'success')
+                print(f"Unidade ID {loja_id} excluída com sucesso.", 'success')
             else:
-                flash(f"Erro ao excluir unidade ID {loja_id}.", 'danger')
+                print(f"Erro ao excluir unidade ID {loja_id}.", 'danger')
         # Adicione aqui outras ações POST como 'adicionar unidade', 'editar unidade', etc.
 
         return redirect(url_for('homeC.gerenciar_unidades_page'))
@@ -202,7 +202,7 @@ def gerenciar_unidades_page():
 def sign_up_loja():
     # Apenas o CEO (nível 4) pode cadastrar novas unidades
     if not (current_user.is_authenticated and current_user.nivel == 4):
-        flash("Você não tem permissão para cadastrar novas unidades.", 'danger')
+        print("Você não tem permissão para cadastrar novas unidades.", 'danger')
         return redirect(url_for('homeC.home_funcionario')) # Redireciona para o painel de funcionario
 
     if request.method == 'POST':
@@ -215,7 +215,7 @@ def sign_up_loja():
             latitude = float(request.form.get('latitude'))
             longitude = float(request.form.get('longitude'))
         except (ValueError, TypeError):
-            flash("Latitude e Longitude devem ser números válidos.", 'danger')
+            print("Latitude e Longitude devem ser números válidos.", 'danger')
             return render_template('sign_up_loja.html')
 
         nova_loja = LojaDatabaseService.adicionar_loja(
@@ -227,10 +227,10 @@ def sign_up_loja():
         )
 
         if nova_loja:
-            flash(f"Unidade '{nova_loja.nome}' cadastrada com sucesso!", 'success')
+            print(f"Unidade '{nova_loja.nome}' cadastrada com sucesso!", 'success')
             return redirect(url_for('homeC.gerenciar_unidades_page')) # Redireciona para a página de gerenciamento
         else:
-            flash("Erro ao cadastrar a unidade. Verifique os dados (CNPJ pode já existir).", 'danger')
+            print("Erro ao cadastrar a unidade. Verifique os dados (CNPJ pode já existir).", 'danger')
             return render_template('sign_up_loja.html')
 
     return render_template('sign_up_loja.html')

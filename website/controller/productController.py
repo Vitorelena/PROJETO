@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for
 from website import db
 from ..service.ProdutoDatabaseService import ProdutoDatabaseService
 from ..service.EstoqueDatabaseService import EstoqueDatabaseService
@@ -34,7 +34,7 @@ def criar_produto():
 
         tipo = categoria_para_tipo.get(str(categoria_id))
         if not tipo:
-            flash("Categoria inválida.", "danger")
+            print("Categoria inválida.", "danger")
             return render_template('criar_produto.html')
 
         specific_attrs = {
@@ -65,10 +65,10 @@ def criar_produto():
                 tipo=tipo,  # removeu categoria daqui
                 **specific_attrs
             )
-            flash("Produto criado com sucesso!", "success")
+            print("Produto criado com sucesso!", "success")
             return redirect(url_for('productC.criar_estoque', produto_id=novo_produto.id))
         except Exception as e:
-            flash(f"Ocorreu um erro ao criar produto: {e}", "danger")
+            print(f"Ocorreu um erro ao criar produto: {e}", "danger")
             print(f"Erro ao criar produto: {e}")
             return render_template('criar_produto.html')
 
@@ -79,12 +79,12 @@ def criar_produto():
 @login_required
 def editar_produto(produto_id):
     if not (current_user.is_authenticated and current_user.nivel >= 2):
-        flash("Você não tem permissão para editar produtos.", 'danger')
+        print("Você não tem permissão para editar produtos.", 'danger')
         return redirect(url_for('homeC.home'))
 
     produto = ProdutoDatabaseService.get_produto_por_id(produto_id)
     if not produto:
-        flash("Produto não encontrado.", 'danger')
+        print("Produto não encontrado.", 'danger')
         return redirect(url_for('productC.gerenciar_produtos'))
 
     if request.method == 'POST':
@@ -108,8 +108,8 @@ def editar_produto(produto_id):
             }
         elif isinstance(produto, VestuarioMasculino):
             specific_attrs = {
-                'tamanho_masculino': request.form.get('tamanho_masculino'),
-                'tecido_masculino': request.form.get('tecido_masculino'),
+                'tamanho_masculino': request.form.get('tamanho_vestuario'),
+                'tecido_masculino': request.form.get('tecido_vestuario'),
                 'cor_vestuario': request.form.get('cor_vestuario')
             }
         elif isinstance(produto, Calcados):
@@ -141,10 +141,10 @@ def editar_produto(produto_id):
         success = ProdutoDatabaseService.atualizar_produto(produto_id=produto.id, **all_attrs)
 
         if success:
-            flash(f"Produto '{produto.nome}' atualizado com sucesso!", 'success')
+            print(f"Produto '{produto.nome}' atualizado com sucesso!", 'success')
             return redirect(url_for('productC.gerenciar_produtos'))
         else:
-            flash("Erro ao atualizar o produto.", 'danger')
+            print("Erro ao atualizar o produto.", 'danger')
 
     return render_template('editar_produto.html', produto=produto)
 @productC.route('/criar_estoque/<int:produto_id>', methods=['GET', 'POST'])
@@ -187,19 +187,19 @@ def visualizar_estoque():
                 show_valor_total = False
             # Caso de funcionário com tipo >=3 mas sem nível ou nível inválido (não deveria acontecer)
             else:
-                flash("Você não tem permissão para visualizar o estoque.", 'danger')
+                print("Você não tem permissão para visualizar o estoque.", 'danger')
                 return redirect(url_for('homeC.home'))
         # Cliente (tipo_usuario == 2) - pode ver estoque, mas SEM valores totais
         elif current_user.tipo_usuario == 2:
             show_valor_total = False
         # Outros tipos de usuário não previstos ou sem permissão (barra acesso)
         else:
-            flash("Você não tem permissão para visualizar o estoque.", 'danger')
+            print("Você não tem permissão para visualizar o estoque.", 'danger')
             return redirect(url_for('homeC.home'))
     else:
         # Este 'else' é tecnicamente redundante devido ao '@login_required',
         # mas serve como um fallback claro em caso de desautenticação inesperada.
-        flash("Você precisa estar logado para visualizar o estoque.", 'danger')
+        print("Você precisa estar logado para visualizar o estoque.", 'danger')
         return redirect(url_for('loginC.login_page'))
 
     # Coleta os dados do estoque após as verificações de permissão
@@ -218,7 +218,7 @@ def visualizar_estoque():
 def gerenciar_estoque():
     # Verificação de nível de acesso
     if not (current_user.is_authenticated and current_user.nivel >= 3):
-        flash("Você não tem permissão para gerenciar o estoque.", 'danger')
+        print("Você não tem permissão para gerenciar o estoque.", 'danger')
         return redirect(url_for('homeC.home')) # Redireciona para a home se não tiver permissão
 
     todos_produtos = ProdutoDatabaseService.get_todos_produtos()
@@ -234,27 +234,27 @@ def gerenciar_estoque():
             produto_id = int(produto_id)
             quantidade = int(quantidade)
         except (ValueError, TypeError):
-            flash("ID do produto ou quantidade inválidos.", 'danger')
+            print("ID do produto ou quantidade inválidos.", 'danger')
             return redirect(url_for('productC.gerenciar_estoque'))
 
         if action == 'adicionar_quantidade':
             success, message, new_quantity = EstoqueDatabaseService.adicionar_ao_estoque(produto_id, quantidade)
             if success:
-                flash(f"Estoque do produto ID {produto_id} atualizado. Nova quantidade: {new_quantity}", 'success')
+                print(f"Estoque do produto ID {produto_id} atualizado. Nova quantidade: {new_quantity}", 'success')
             else:
-                flash(f"Erro ao adicionar estoque: {message}", 'danger')
+                print(f"Erro ao adicionar estoque: {message}", 'danger')
         elif action == 'subtrair_quantidade':
             success, message = EstoqueDatabaseService.subtrair_do_estoque(produto_id, quantidade)
             if success:
-                flash(f"Estoque do produto ID {produto_id} subtraído com sucesso.", 'success')
+                print(f"Estoque do produto ID {produto_id} subtraído com sucesso.", 'success')
             else:
-                flash(f"Erro ao subtrair estoque: {message}", 'danger')
+                print(f"Erro ao subtrair estoque: {message}", 'danger')
         elif action == 'excluir_estoque':
             success = EstoqueDatabaseService.excluir_estoque_do_produto(produto_id)
             if success:
-                flash(f"Estoque do produto ID {produto_id} excluído com sucesso.", 'success')
+                print(f"Estoque do produto ID {produto_id} excluído com sucesso.", 'success')
             else:
-                flash(f"Erro ao excluir estoque.", 'danger')
+                print(f"Erro ao excluir estoque.", 'danger')
         # Adicione outras ações de gerenciamento aqui (editar, etc.)
 
         return redirect(url_for('productC.gerenciar_estoque')) # Redireciona para atualizar a lista
@@ -268,7 +268,7 @@ def gerenciar_estoque():
 def gerenciar_produtos():
     # Verificação de nível de acesso (o mesmo do estoque, Gerente ou superior)
     if not (current_user.is_authenticated and current_user.nivel >= 2):
-        flash("Você não tem permissão para gerenciar produtos.", 'danger')
+        print("Você não tem permissão para gerenciar produtos.", 'danger')
         return redirect(url_for('homeC.home'))
 
     # Para GET: Exibe a lista de produtos
@@ -284,15 +284,15 @@ def gerenciar_produtos():
         try:
             produto_id = int(produto_id)
         except (ValueError, TypeError):
-            flash("ID do produto inválido.", 'danger')
+            print("ID do produto inválido.", 'danger')
             return redirect(url_for('productC.gerenciar_produtos'))
 
         if action == 'excluir_produto':
             success = ProdutoDatabaseService.excluir_produto(produto_id)
             if success:
-                flash(f"Produto ID {produto_id} excluído com sucesso.", 'success')
+                print(f"Produto ID {produto_id} excluído com sucesso.", 'success')
             else:
-                flash(f"Erro ao excluir produto ID {produto_id}.", 'danger')
+                print(f"Erro ao excluir produto ID {produto_id}.", 'danger')
         # Adicione aqui outras ações POST como 'ativar/desativar', etc.
 
         return redirect(url_for('productC.gerenciar_produtos')) # Redireciona para atualizar a lista

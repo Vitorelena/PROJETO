@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session
 from flask_login import login_required, current_user
 from .vendaController import obter_carrinho
 import random
@@ -7,11 +7,13 @@ from website import mail
 from flask_mail import Message
 from datetime import datetime, timedelta
 from ..model.Vendas.Venda import Venda
-from ..model.Vendas.ItemVendido import ItemVendido
-from ..service.ProdutoDatabaseService import ProdutoDatabaseService
+from website.model.Vendas.ProcessadorDeCompraDireta import ProcessadorDeCompraDireta
+from website.model.Vendas.CarrinhoDeCompras import CarrinhoDeCompras
 from website import db
-from ..controller.emailutilsController import gerar_resumo_venda_email_html
+from ..controller.emailutilsController import gerar_resumo_venda_email_html, criar_venda_temporaria_para_email
 from ..service.UserDatabaseService import UserDatabaseService
+from ..service.ProdutoDatabaseService import ProdutoDatabaseService
+from ..model.Vendas.ItemVendido import ItemVendido
 
 emailc = Blueprint('emailc', __name__)
 
@@ -36,7 +38,7 @@ def enviar_codigo(email_dest, codigo):
 def enviar_codigo_route():
     email = request.form.get('email')
     if not email:
-        flash('Email não fornecido.', 'warning')
+        print('Email não fornecido.', 'warning')
         return redirect(url_for('vendaC.finalizar_venda'))
 
     codigo = gerar_codigo()
@@ -45,10 +47,10 @@ def enviar_codigo_route():
 
     sucesso = enviar_codigo(email, codigo)
     if sucesso:
-        flash('Código enviado para seu email.', 'info')
+        print('Código enviado para seu email.', 'info')
         return redirect(url_for('emailc.validar_codigo'))
     else:
-        flash('Erro ao enviar o código, tente novamente.', 'danger')
+        print('Erro ao enviar o código, tente novamente.', 'danger')
         return redirect(url_for('vendaC.finalizar_venda'))
 
 @emailc.route('/pedir_email', methods=['GET', 'POST'])
@@ -57,7 +59,7 @@ def pedir_email():
     if request.method == 'POST':
         email = request.form.get('email')
         if not email:
-            flash('Informe um email válido.', 'warning')
+            print('Informe um email válido.', 'warning')
             return render_template('pedir_email.html')
 
         # Determinar cliente_id e funcionario_id seguindo a regra:
@@ -73,7 +75,7 @@ def pedir_email():
         carrinho = obter_carrinho()
         itens_carrinho = carrinho.obter_itens()
         if not itens_carrinho:
-            flash('Seu carrinho está vazio.', 'warning')
+            print('Seu carrinho está vazio.', 'warning')
             return redirect(url_for('vendaC.carrinho'))
 
         session['email_confirmacao'] = email
@@ -84,17 +86,17 @@ def pedir_email():
             'itens': itens_carrinho,
             'email': email
         }
-
+        session['cliente_id'] = cliente_id
         codigo = gerar_codigo()
         sucesso = enviar_codigo(email, codigo)
         if not sucesso:
-            flash('Erro ao enviar email. Tente novamente.', 'danger')
+            print('Erro ao enviar email. Tente novamente.', 'danger')
             return render_template('pedir_email.html')
 
         session['codigo_confirmacao'] = codigo
         session['codigo_expira_em'] = (datetime.utcnow() + timedelta(minutes=20)).isoformat()
 
-        flash('Código enviado para seu email.', 'info')
+        print('Código enviado para seu email.', 'info')
         return redirect(url_for('emailc.validar_codigo'))
 
     # GET
@@ -105,87 +107,64 @@ def pedir_email():
     return render_template('pedir_email.html', clientes=clientes)
 
 
-@emailc.route('/validar_codigo', methods=['GET', 'POST'])
+
+@emailc.route('/validar_codigo', methods=['GET','POST'])
 @login_required
 def validar_codigo():
     if request.method == 'POST':
         codigo_digitado = request.form.get('codigo')
         codigo_armazenado = session.get('codigo_confirmacao')
-        
         expira_em_str = session.get('codigo_expira_em')
+
+        # Verifica expiração do código
         if expira_em_str:
-            from datetime import datetime
             expira_em = datetime.fromisoformat(expira_em_str)
             if datetime.utcnow() > expira_em:
                 session.pop('codigo_confirmacao', None)
                 session.pop('codigo_expira_em', None)
-                flash('Código expirado. Solicite um novo.', 'warning')
+                print('Código expirado. Solicite um novo.', 'warning')
                 return redirect(url_for('emailc.pedir_email'))
-        if codigo_digitado and codigo_digitado.upper() == codigo_armazenado:
-            # Código correto: salvar venda no banco usando venda_pendente
+
+        # Valida o código
+        if codigo_digitado and codigo_armazenado and codigo_digitado.upper() == codigo_armazenado:
             dados_venda = session.get('venda_pendente')
             if not dados_venda:
-                flash('Dados da venda não encontrados. Por favor, refaça o processo.', 'danger')
+                print('Dados da venda não encontrados. Por favor, refaça o processo.', 'danger')
                 return redirect(url_for('vendaC.carrinho'))
 
-            produto_service = ProdutoDatabaseService()
-            user_service = UserDatabaseService()
+            # Verifica o estoque antes de continuar
+            carrinho_ficticio = CarrinhoDeCompras()
+            carrinho_ficticio.itens = dados_venda['itens']
+            processador = ProcessadorDeCompraDireta()
 
-            nova_venda = Venda(
-                data_venda=datetime.utcnow(),
-                cliente_id=dados_venda['cliente_id'],
-                funcionario_id=dados_venda.get('funcionario_id')
-            )
-            db.session.add(nova_venda)
-            db.session.flush()
+            estoque_ok, mensagem_estoque = processador.verificar_estoque(carrinho_ficticio)
+            if not estoque_ok:
+                print(f"Erro de estoque: {mensagem_estoque}", 'danger')
+                return redirect(url_for('vendaC.carrinho'))
 
-            # Adiciona os itens da venda
-            for produto_id, quantidade in dados_venda['itens'].items():
-                produto = produto_service.get_produto_por_id(int(produto_id))
-                if produto:
-                    item_vendido = ItemVendido(
-                        venda_id=nova_venda.id,
-                        produto_id=produto.id,
-                        quantidade=quantidade,
-                        preco_unitario=produto.preco
-                    )
-                    db.session.add(item_vendido)
-                    produto.estoque.quantidade -= quantidade
+            # Cria objeto Venda temporário para gerar o email
+            venda_temp = criar_venda_temporaria_para_email(dados_venda)
 
-            try:
-                db.session.commit()
+            session['codigo_validado'] = True
 
-                # Envio do email de confirmação da compra
-                corpo_texto, corpo_html = gerar_resumo_venda_email_html(nova_venda)
+            if dados_venda.get('email'):
                 try:
+                    corpo_texto, corpo_html = gerar_resumo_venda_email_html(venda_temp)
                     msg = Message(
-                        subject=f"CONFIRMAÇÃO DA SUA COMPRA #{nova_venda.id}",
+                        subject="RESUMO DA SUA COMPRA",
                         recipients=[dados_venda['email']],
                         body=corpo_texto,
                         html=corpo_html
                     )
                     mail.send(msg)
+                    print('Resumo da compra enviado por e-mail.', 'success')
                 except Exception as e:
-                    print(f"Erro ao enviar email de confirmação: {e}")
-                    flash('Erro ao enviar email de confirmação.', 'warning')
+                    print(f"Erro ao enviar e-mail: {e}", 'warning')
 
-                session.pop('venda_pendente', None)
-                session.pop('codigo_confirmacao', None)
-                session.pop('carrinho', None)
+            cliente_id = session.get('venda_pendente', {}).get('cliente_id')
+            return render_template('confirmar_compra.html', cliente_id=cliente_id)
 
-                user_service.cliente_fez_compra(int(dados_venda['cliente_id']))
-                if dados_venda.get('funcionario_id'):
-                    user_service.funcionario_fez_venda(dados_venda['funcionario_id'])
-
-                flash('Compra confirmada com sucesso!', 'success')
-                return redirect(url_for('vendaC.compra_realizada'))
-
-            except Exception as e:
-                db.session.rollback()
-                print(f"Erro ao salvar a venda: {e}")
-                flash('Erro ao confirmar a compra, tente novamente.', 'danger')
-                return redirect(url_for('emailc.validar_codigo'))
         else:
-            flash('Código inválido. Tente novamente.', 'danger')
+            print('Código inválido. Tente novamente.', 'danger')
 
     return render_template('validar_codigo.html')

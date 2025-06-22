@@ -9,12 +9,14 @@ from ... import db
 from flask_login import current_user
 
 class ProcessadorDeCompraDireta(ProcessadorDeCompra):
-    def verificar_estoque(self, carrinho: CarrinhoDeCompras) -> bool:
+    def verificar_estoque(self, carrinho: CarrinhoDeCompras) -> tuple[bool, str]:
         for produto_id, quantidade in carrinho.obter_itens().items():
             estoque = EstoqueDatabaseService.get_estoque_por_produto_id(produto_id)
-            if not estoque or estoque.quantidade < quantidade:
-                return False
-        return True 
+            if not estoque:
+                return False, f"Produto {produto_id} não possui registro de estoque."
+            if estoque.quantidade < quantidade:
+                return False, f"Produto {produto_id} com estoque insuficiente: {estoque.quantidade} disponível, {quantidade} solicitado."
+        return True, "Estoque verificado com sucesso."
     
     def atualizar_estoque(self, carrinho: CarrinhoDeCompras) -> bool:
         for produto_id, quantidade in carrinho.obter_itens().items():
@@ -25,32 +27,43 @@ class ProcessadorDeCompraDireta(ProcessadorDeCompra):
         return True
 
     def registrar_venda(self, carrinho: CarrinhoDeCompras, usuario=None, funcionario=None):
-        venda = Venda(
-            cliente_id=usuario.id if usuario else None,
-            funcionario_id=funcionario.id if funcionario else None
-        )
-        db.session.add(venda)
-        db.session.flush()
+        try:
+            # Cria a venda com os IDs de cliente e funcionário (se houver)
+            venda = Venda(
+                data_venda=datetime.utcnow(),
+                cliente_id= usuario.id if usuario else None,
+                funcionario_id=funcionario.id if funcionario else None
+            )
+            db.session.add(venda)
+            db.session.flush()  # Garante que venda.id está disponível
 
-        for produto_id, quantidade in carrinho.obter_itens().items():
-            produto = ProdutoDatabaseService.get_produto_por_id(produto_id)
-            if produto:
+            # Para cada item no carrinho, adiciona o item vendido e atualiza estoque
+            for produto_id, quantidade in carrinho.obter_itens().items():
+                produto = ProdutoDatabaseService.get_produto_por_id(produto_id)
+                if not produto:
+                    # Produto não existe, aborta registro da venda
+                    raise ValueError(f"Produto com id {produto_id} não encontrado.")
+
+                # Cria registro do item vendido
                 item_vendido = ItemVendido(
                     venda_id=venda.id,
-                    produto_id=produto.id, 
+                    produto_id=produto.id,
                     quantidade=quantidade,
                     preco_unitario=produto.preco
                 )
                 db.session.add(item_vendido)
-        try:
+
+                # Atualiza estoque do produto
+                if produto.estoque.quantidade < quantidade:
+                    raise ValueError(f"Estoque insuficiente para o produto {produto.id}")
+                
             db.session.commit()
-            if funcionario:
-                funcionario.registrar_venda(venda)
-            return True
+            return True, None
         except Exception as e:
             db.session.rollback()
             print(f"Erro ao registrar a venda: {e}")
-            return False
+            return False, str(e)
+
     
     def processar_compra(self, carrinho: CarrinhoDeCompras, usuario=None, funcionario=None):
         if self.verificar_estoque(carrinho):

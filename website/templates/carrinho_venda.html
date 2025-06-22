@@ -60,10 +60,12 @@
                     </select>
                 </div>
                 <button type="submit" class="btn btn-success mt-3">Confirmar Venda</button>
-            </form>
+            </form> 
         {% else %}
             <a href="{{ url_for('homeC.home') }}" class="btn btn-secondary">Continuar vendendo</a>
-            <a href="{{ url_for('vendaC.finalizar_venda') }}" class="btn btn-primary">Finalizar venda</a>
+            <form action="{{ url_for('vendaC.finalizar_venda') }}" method="GET" style="display: inline;">
+                <button type="submit" class="btn btn-primary">Finalizar venda</button>
+            </form>
         {% endif %}
     {% else %}
         <p>Seu carrinho está vazio.</p>

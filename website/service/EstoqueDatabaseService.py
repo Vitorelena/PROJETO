@@ -19,7 +19,7 @@ class EstoqueDatabaseService:
             return True
         else:
             return False, "Estoque já existe para este produto."
-        
+            
     @staticmethod
     def adicionar_ao_estoque(produto_id, quantidade):
         estoque = Estoque.query.filter_by(produto_id=produto_id).first()
@@ -77,9 +77,22 @@ class EstoqueDatabaseService:
 
     @staticmethod
     def excluir_estoque_do_produto(produto_id):
-        estoque = Estoque.query.filter_by(produto_id=produto_id).first()
-        if estoque:
-            db.session.delete(estoque)
-            db.session.commit()
-            return True
-        return False
+        try:
+            estoque = Estoque.query.filter_by(produto_id=produto_id).first()
+            if estoque:
+                produto = estoque.produto
+                if produto:
+                    db.session.delete(produto)
+                    db.session.commit()
+                    print(f"Produto {produto_id} e estoque deletados via estoque.")
+                    return True
+                else:
+                    print(f"Produto associado ao estoque não encontrado para produto_id={produto_id}.")
+                    return False
+            else:
+                print(f"Nenhum estoque encontrado para produto_id={produto_id}.")
+                return False
+        except Exception as e:
+            db.session.rollback()
+            print(f"Erro ao excluir produto e estoque via estoque: {e}")
+            return False

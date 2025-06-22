@@ -114,10 +114,10 @@
     </style>
 </head>
 <body>
-    <h1>Minhas Vendas</h1>
+    <h1>Minhas Compras</h1>
     {% if vendas %}
         {% for venda in vendas %}
-            <h2>Venda #{{ venda.id }}</h2>
+            <h2>Compra #{{loop.index}}</h2>
             <table>
                 <thead>
                     <tr>

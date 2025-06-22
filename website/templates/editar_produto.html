@@ -2,7 +2,7 @@
 
 {% block title %}Editar Produto{% endblock %}
 {% block alert %}
-    {# Mensagens flash do Flask #}
+    {# Mensagens print do Flask #}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="container mt-3">
@@ -63,7 +63,7 @@
             <div class="form-group">
                 <label for="tamanho_vestuario">Tamanho:</label>
                 <input type="text" class="form-control" name="tamanho_vestuario" 
-                       value="{% if produto.categoria == '1' %}{{ produto.tamanho_feminino if produto.tamanho_feminino is defined else '' }}{% elif produto.categoria == '2' %}{{ produto.tamanho if produto.tamanho is defined else '' }}{% endif %}">
+                       value="{% if produto.categoria == '1' %}{{ produto.tamanho_feminino if produto.tamanho_feminino is defined else '' }}{% elif produto.categoria == '2' %}{{ produto.tamanho_masculino if produto.tamanho_masculino is defined else '' }}{% endif %}">
             </div>
             <div class="form-group">
                 <label for="cor_vestuario">Cor:</label>
@@ -72,7 +72,7 @@
             <div class="form-group">
                 <label for="tecido_vestuario">Tecido:</label>
                 <input type="text" class="form-control" name="tecido_vestuario" 
-                       value="{% if produto.categoria == '1' %}{{ produto.tecido_feminino if produto.tecido_feminino is defined else '' }}{% elif produto.categoria == '2' %}{{ produto.tecido if produto.tecido is defined else '' }}{% endif %}">
+                       value="{% if produto.categoria == '1' %}{{ produto.tecido_feminino if produto.tecido_feminino is defined else '' }}{% elif produto.categoria == '2' %}{{ produto.tecido_masculino if produto.tecido_masculino is defined else '' }}{% endif %}">
             </div>
         </div>
 

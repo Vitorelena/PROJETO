@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 
@@ -22,7 +22,7 @@ def login_page():
         # Verifica se o usuário existe e a senha está correta
         if user and check_password_hash(user.senha, senha):
             login_user(user, remember=remember)
-            flash('Login realizado com sucesso!', 'success')
+            print('Login realizado com sucesso!', 'success')
             # Redireciona para a home específica após o login
             if user.tipo_usuario == 2:
                 return redirect(url_for('homeC.home_cliente'))
@@ -31,7 +31,7 @@ def login_page():
             else:
                 return redirect(url_for('homeC.home')) # Home padrão
         else:
-            flash('Login ou senha inválidos.', 'danger')
+            print('Login ou senha inválidos.', 'danger')
 
     return render_template('login.html') # Você deve ter um template 'login.html'
 
@@ -40,7 +40,7 @@ def login_page():
 @login_required # Garante que apenas usuários logados possam deslogar
 def logout():
     logout_user()
-    flash('Você foi desconectado(a).', 'info')
+    print('Você foi desconectado(a).', 'info')
     return redirect(url_for('homeC.home')) # Redireciona para a home padrão
 
 # --- Rota de Cadastro Geral (Cliente, Funcionário) ---
@@ -55,7 +55,7 @@ def sign_up():
 
         # 1. Validação de Senha
         if senha_insegura != confirm_senha:
-            flash('As senhas não coincidem!', 'danger')
+            print('As senhas não coincidem!', 'danger')
             return render_template('sign_up.html') # Retorna ao formulário
 
         hashed_senha = generate_password_hash(senha_insegura) # Gerar hash da senha
@@ -64,7 +64,7 @@ def sign_up():
         user_exists = User.query.filter_by(login=login).first() or \
                       User.query.filter_by(cpf=cpf).first()
         if user_exists:
-            flash('Login ou CPF já cadastrados. Por favor, use outros dados.', 'danger')
+            print('Login ou CPF já cadastrados. Por favor, use outros dados.', 'danger')
             return render_template('sign_up.html') # Retorna ao formulário
 
         # 3. Processamento por Tipo de Usuário
@@ -72,7 +72,7 @@ def sign_up():
         try:
             tipo_usuario = int(request.form.get('tipo_usuario'))
         except (ValueError, TypeError):
-            flash("Tipo de usuário inválido selecionado.", 'danger')
+            print("Tipo de usuário inválido selecionado.", 'danger')
             return render_template('sign_up.html')
 
         novo_usuario_cadastrado = None # Variável para armazenar o objeto usuário criado
@@ -85,18 +85,18 @@ def sign_up():
                 senha=hashed_senha # Passa a senha hashed
             )
             if novo_usuario_cadastrado:
-                flash(f"Cliente '{nome}' cadastrado com sucesso!", 'success')
+                print(f"Cliente '{nome}' cadastrado com sucesso!", 'success')
                 login_user(novo_usuario_cadastrado, remember=True) # Loga o cliente automaticamente
                 return redirect(url_for('homeC.home_cliente')) # Redireciona para home do cliente
             else:
-                flash("Erro ao cadastrar o cliente. Verifique os dados e tente novamente.", 'danger')
+                print("Erro ao cadastrar o cliente. Verifique os dados e tente novamente.", 'danger')
         
         elif tipo_usuario == 3: # Funcionário (Staff, SubGerente, Gerente)
             # O valor do campo 'nivel_funcionario' virá como string, converta para int
             try:
                 nivel_funcionario = int(request.form.get('nivel_funcionario'))
             except (ValueError, TypeError):
-                flash("Nível de funcionário inválido selecionado.", 'danger')
+                print("Nível de funcionário inválido selecionado.", 'danger')
                 return render_template('sign_up.html')
 
             matricula = request.form.get('matricula')
@@ -114,17 +114,17 @@ def sign_up():
                     nome=nome, cpf=cpf, login=login, senha=hashed_senha, matricula=matricula
                 )
             else:
-                flash("Nível de funcionário inválido.", 'danger') # Nível numérico fora do range 1-3
+                print("Nível de funcionário inválido.", 'danger') # Nível numérico fora do range 1-3
                 return render_template('sign_up.html')
 
             if novo_usuario_cadastrado:
-                flash(f"Funcionário '{nome}' (Nível {nivel_funcionario}) cadastrado com sucesso!", 'success')
+                print(f"Funcionário '{nome}' (Nível {nivel_funcionario}) cadastrado com sucesso!", 'success')
                 login_user(novo_usuario_cadastrado, remember=True) # Loga o funcionário automaticamente
                 return redirect(url_for('homeC.home_funcionario')) # Redireciona para home do funcionário
             else:
-                flash("Erro ao cadastrar o funcionário. Verifique a matrícula ou outros dados.", 'danger')
+                print("Erro ao cadastrar o funcionário. Verifique a matrícula ou outros dados.", 'danger')
         else: # Tipo de usuário (2 ou 3) inválido.
-            flash("Tipo de usuário inválido selecionado.", 'danger')
+            print("Tipo de usuário inválido selecionado.", 'danger')
 
         # Se houver alguma falha não coberta pelos redirects anteriores
         return render_template("sign_up.html")
@@ -148,14 +148,14 @@ def sign_up_ceo():
         confirm_senha = request.form.get('confirm_senha')
 
         if senha != confirm_senha:
-            flash('As senhas não coincidem!', 'danger')
+            print('As senhas não coincidem!', 'danger')
             return render_template('sign_up_ceo.html')
 
         # Verifique se o login ou CPF já existem no banco de dados
         user_exists = User.query.filter_by(login=login).first() or \
                       User.query.filter_by(cpf=cpf).first()
         if user_exists:
-            flash('Login ou CPF já cadastrados. Por favor, use outros dados.', 'danger')
+            print('Login ou CPF já cadastrados. Por favor, use outros dados.', 'danger')
             return render_template('sign_up_ceo.html')
 
         hashed_senha = generate_password_hash(senha) # HASHEAR A SENHA!
@@ -170,14 +170,14 @@ def sign_up_ceo():
             )
 
             if novo_ceo:
-                flash('Conta de CEO criada com sucesso! Você foi logado(a) automaticamente.', 'success')
+                print('Conta de CEO criada com sucesso! Você foi logado(a) automaticamente.', 'success')
                 login_user(novo_ceo, remember=True) # Loga o CEO automaticamente
                 return redirect(url_for('homeC.home_funcionario')) # CEO geralmente vai para painel de funcionario/admin
             else:
-                flash('Não foi possível criar a conta de CEO. Tente novamente.', 'danger')
+                print('Não foi possível criar a conta de CEO. Tente novamente.', 'danger')
                 return render_template('sign_up_ceo.html')
         except Exception as e:
-            flash(f'Ocorreu um erro inesperado ao criar a conta: {e}', 'danger')
+            print(f'Ocorreu um erro inesperado ao criar a conta: {e}', 'danger')
             print(f"Erro ao adicionar CEO: {e}") # Para depuração no console
             return render_template('sign_up_ceo.html')
 
