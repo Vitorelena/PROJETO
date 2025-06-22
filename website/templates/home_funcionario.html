@@ -128,7 +128,7 @@
                     <div class="card-body text-center">
                         <p>Acesse o estoque para verificar a disponibilidade dos produtos.</p>
                         <a href="{{ url_for('productC.visualizar_estoque') }}" class="btn btn-primary btn-lg mb-2">Ver Estoque Completo</a><br>
-                        <a href="{{ url_for('vendaC.realizar_venda') }}" class="btn btn-success btn-lg">Realizar Venda</a>
+                        <a href="{{ url_for('vendaC.carrinho_venda') }}" class="btn btn-success btn-lg">Realizar Venda</a>
                     </div>
                 </div>
                 {% endif %} {# FIM DO IF DE NÍVEL (CEO, Gerente, SubGerente, Staff) #}

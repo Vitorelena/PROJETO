@@ -99,68 +99,68 @@ def finalizar_venda():
 @vendaC.route('/processar_compra', methods=['POST'])
 @login_required
 def processar_compra():
-    # ✅ Verifica se o código foi validado
     if not session.get('codigo_validado'):
         flash('Você precisa confirmar o código enviado ao email antes de finalizar a venda.', 'danger')
         return redirect(url_for('emailc.pedir_email'))
+    
+    if session.get('codigo_validado'):
+        carrinho = obter_carrinho()
+        produto_service = ProdutoDatabaseService()
+        user_service = UserDatabaseService()
+        itens_carrinho = carrinho.obter_itens()
 
-    carrinho = obter_carrinho()
-    produto_service = ProdutoDatabaseService()
-    user_service = UserDatabaseService()
-    itens_carrinho = carrinho.obter_itens()
+        if not itens_carrinho:
+            flash('Seu carrinho está vazio.', 'warning')
+            return redirect(url_for('vendaC.carrinho'))
 
-    if not itens_carrinho:
-        flash('Seu carrinho está vazio.', 'warning')
-        return redirect(url_for('vendaC.carrinho'))
+        cliente_id = None
+        funcionario_id = None
 
-    cliente_id = None
-    funcionario_id = None
+        if current_user.tipo_usuario == 2:  # Cliente comprando
+            cliente_id = current_user.id
+        elif current_user.tipo_usuario >= 3:  # Funcionário vendendo
+            cliente_id = request.form.get('cliente_id')
+            funcionario_id = current_user.id
+        else:
+            flash('Tipo de usuário inválido para realizar compras.', 'danger')
+            return redirect(url_for('vendaC.carrinho'))
 
-    if current_user.tipo_usuario == 2:  # Cliente comprando
-        cliente_id = current_user.id
-    elif current_user.tipo_usuario >= 3:  # Funcionário vendendo
-        cliente_id = request.form.get('cliente_id')
-        funcionario_id = current_user.id
-    else:
-        flash('Tipo de usuário inválido para realizar compras.', 'danger')
-        return redirect(url_for('vendaC.carrinho'))
+        nova_venda = Venda(
+            data_venda=datetime.utcnow(),
+            cliente_id=cliente_id,
+            funcionario_id=funcionario_id
+        )
+        db.session.add(nova_venda)
+        db.session.flush()
 
-    nova_venda = Venda(
-        data_venda=datetime.utcnow(),
-        cliente_id=cliente_id,
-        funcionario_id=funcionario_id
-    )
-    db.session.add(nova_venda)
-    db.session.flush()
+        for produto_id, quantidade in itens_carrinho.items():
+            produto = produto_service.get_produto_por_id(int(produto_id))
+            if produto:
+                item_vendido = ItemVendido(
+                    venda_id=nova_venda.id,
+                    produto_id=produto.id,
+                    quantidade=quantidade,
+                    preco_unitario=produto.preco
+                )
+                db.session.add(item_vendido)
+                produto.estoque.quantidade -= quantidade
+        try:
+            db.session.commit()
+            user_service.cliente_fez_compra(cliente_id)
+            if funcionario_id:
+                user_service.funcionario_fez_venda(funcionario_id)
+            session.pop('carrinho', None)
+            session.pop('codigo_validado', None)
+            session.pop('codigo', None)
+            session.pop('codigo_expiracao', None)
+            flash('Compra realizada com sucesso!', 'success')
+            return redirect(url_for('vendaC.compra_realizada'))
 
-    for produto_id, quantidade in itens_carrinho.items():
-        produto = produto_service.get_produto_por_id(int(produto_id))
-        if produto:
-            item_vendido = ItemVendido(
-                venda_id=nova_venda.id,
-                produto_id=produto.id,
-                quantidade=quantidade,
-                preco_unitario=produto.preco
-            )
-            db.session.add(item_vendido)
-            produto.estoque.quantidade -= quantidade
-    try:
-        db.session.commit()
-        user_service.cliente_fez_compra(cliente_id)
-        if funcionario_id:
-            user_service.funcionario_fez_venda(funcionario_id)
-        session.pop('carrinho', None)
-        session.pop('codigo_validado', None)
-        session.pop('codigo', None)
-        session.pop('codigo_expiracao', None)
-        flash('Compra realizada com sucesso!', 'success')
-        return redirect(url_for('vendaC.compra_realizada'))
-
-    except Exception as e:
-        db.session.rollback()
-        print(f"Erro ao processar a compra: {e}")
-        flash('Ocorreu um erro ao finalizar a compra.', 'danger')
-        return redirect(url_for('vendaC.carrinho'))
+        except Exception as e:
+            db.session.rollback()
+            print(f"Erro ao processar a compra: {e}")
+            flash('Ocorreu um erro ao finalizar a compra.', 'danger')
+            return redirect(url_for('vendaC.carrinho'))
 
 @vendaC.route('/compra_realizada')
 @login_required
